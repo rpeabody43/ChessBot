@@ -1,5 +1,5 @@
 public class Move {
-    private int start;
+    private int start; // index in 1d array
     private int end;
     private boolean check;
     private int capturedPiece;

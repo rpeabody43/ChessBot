@@ -10,13 +10,17 @@ public class Sketch extends PApplet {
         PApplet.runSketch(processingArgs, sketch);
     }
 
+    public Sketch () {
+        this.chess = new Chess(new HPlayer(), new AIPlayer());
+    }
+
     @Override
     public void settings () {
         size(512, 512);
     }
 
-    @Override
-    public void draw () {
+    private void drawBoard () {
+        // BACKGROUND
         fill(20, 100, 135);
         noStroke();
         background(237, 226, 199);
@@ -27,6 +31,39 @@ public class Sketch extends PApplet {
                     square(squareWidth * i, squareWidth * j, squareWidth);
             }
         }
-        // Call chess.currentBoard() or something
+        int[][] currentBoard = chess.currentBoard().pieces;
+        for (int i = 0; i < 8; i++)
+            for (int j = 0; j < 8; j++) {
+                int piece = currentBoard[i][j];
+                char letter = switch (Math.abs(piece)) {
+                    case Board.P: yield 'P';
+                    case Board.N: yield 'N';
+                    case Board.B: yield 'B';
+                    case Board.R: yield 'R';
+                    case Board.Q: yield 'Q';
+                    case Board.K: yield 'K';
+                    default: yield ' ';
+                };
+                stroke(0);
+                textAlign(CENTER, CENTER);
+                fill(piece > 0 ? 255 : 0);
+                textSize(25);
+                text(letter, squareWidth*j + squareWidth/2, squareWidth*i + squareWidth/2);
+            }
+    }
+
+    // -- GAMELOOP --
+    @Override
+    public void draw () {
+        drawBoard();
+    }
+
+    @Override
+    public void mouseClicked() {
+        return; // STUB
+        // Something like
+        // Set variables x1, y1 to first mouse click
+        // Set x2, y2 to second mouse click
+        // Pass that to chess to check if a valid move
     }
 }

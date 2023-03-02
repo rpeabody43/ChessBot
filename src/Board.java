@@ -3,13 +3,13 @@ import java.util.Stack;
 
 public class Board {
 
-    public static final int OPEN = 0;
-    public static final int PAWN = 1;
-    public static final int KNIGHT = 2;
-    public static final int BISHOP = 3;
-    public static final int ROOK = 4;
-    public static final int QUEEN = 5;
-    public static final int KING = 6;
+    // 0 is open
+    public static final int P = 1; // PAWN
+    public static final int N = 2; // KNIGHT
+    public static final int B = 3; // BISHOP
+    public static final int R = 4; // ROOK
+    public static final int Q = 5; // QUEEN
+    public static final int K = 6; // KING
 
     private LinkedList<Move> possibleMoves;
     private Stack<Move> pastMoves;
@@ -17,8 +17,17 @@ public class Board {
     int[][] pieces;
 
     public Board () {
-        pieces = new int[8][8];
-        // TODO starting position
+        pieces = new int[][]{
+                {-R,-N,-B,-Q,-K,-B,-N,-R}, // Black Pieces
+                {-P,-P,-P,-P,-P,-P,-P,-P}, // Black Pawns
+                {0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0},
+                {0, 0, 0, 0, 0, 0, 0, 0},
+                {P, P, P, P, P, P, P, P}, // White Pieces
+                {R, N, B, Q, K, B, N, R}, // White Pawns
+        };
+
     }
 
 
