@@ -43,6 +43,7 @@ public class Board {
 
     }
 
+    // checks if a move is valid
     private boolean moveValid (int[] start, int[] end) {
         return false; // STUB
     }
