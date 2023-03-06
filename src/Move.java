@@ -11,6 +11,7 @@ public class Move {
         this.capturedPiece = capturedPiece;
     }
 
+    // returns check
     public boolean isCheck () {
         return check;
     }
