@@ -16,6 +16,7 @@ public class Move {
         return check;
     }
 
+    // returns which piece was captured
     public int getCapturedPiece () {
         return capturedPiece;
     }
