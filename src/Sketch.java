@@ -57,12 +57,12 @@ public class Sketch extends PApplet {
         noStroke();
         background(237, 226, 199);
         float squareWidth = width / 8f;
-        int[][] currentBoard = chess.currentBoard().pieces;
+        int[] currentBoard = chess.currentBoard().pieces;
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 if ((i + j) % 2 == 1)
                     square(squareWidth * j, squareWidth * i, squareWidth);
-                int piece = currentBoard[i][j];
+                int piece = currentBoard[i*8+j];
                 char letter = switch (Math.abs(piece)) {
                     case Board.P: yield 'P';
                     case Board.N: yield 'N';
