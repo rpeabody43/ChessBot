@@ -48,6 +48,14 @@ public class Board {
         return false; // STUB
     }
 
+    private int row (int idx) {
+        return idx/8;
+    }
+
+    private int column (int idx) {
+        return idx % 8;
+    }
+
     private void addPawnMoves (int idx) {
 
     }
