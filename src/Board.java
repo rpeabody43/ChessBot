@@ -57,7 +57,21 @@ public class Board {
     }
 
     private void addPawnMoves (int idx) {
+        // TODO : Holy hell
+        int color = (pieces[idx] > 0) ? 1 : -1;
+        int dir = -color; // White moves up, black moves down
 
+        for (int change = 7*dir; change <= 9*dir; change += dir) {
+            int p = pieces[idx + change];
+            if (change == 8 || change == -8) { // Straight up/down
+                if (p == 0)
+                    possibleMoves.push(new Move(idx, idx + change, false, 0));
+            }
+            else {
+                if (p*color < 0) // If different colors
+                    possibleMoves.push(new Move(idx, idx+change, false, p));
+            }
+        }
     }
 
     private void addKnightMoves (int idx) {
