@@ -65,7 +65,25 @@ public class Board {
     }
 
     private void addBishopMoves (int idx) {
+        int color = (pieces[idx] > 0) ? 1 : -1;
+        boolean blocked = false;
 
+        int[] deltas = {9, -9, 7, -7};
+
+        for (int d : deltas) {
+            for (int change = d; idx + change < pieces.length && !blocked; change += d) {
+                int p = pieces[idx + change];
+                if (color * p > 0) {
+                    // If blocked by the same color, don't add a new move
+                    blocked = true;
+                    continue;
+                } else if (color * p < 0) {
+                    // If blocked by different color, add a move where you capture, but no more
+                    blocked = true;
+                }
+                possibleMoves.push(new Move(idx, idx + change, false, p)); // TODO : CHECKS
+            }
+        }
     }
 
     private void addRookMoves (int idx) {
