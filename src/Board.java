@@ -60,8 +60,19 @@ public class Board {
         // TODO : Holy hell
         int color = (pieces[idx] > 0) ? 1 : -1;
         int dir = -color; // White moves up, black moves down
+        int col = column(idx);
+        int start;
+        int end;
+        if ((idx+7*dir)%8 == 0 || (idx+7+dir)%8 == 7)
+            start = 8;
+        if ((idx+9*dir)%8 == 0 || (idx+9+dir)%8 == 7)
+            end = 8;
 
-        for (int change = 7*dir; change <= 9*dir; change += dir) {
+        start = 7;
+        end = 9;
+
+
+        for (int change = start*dir; change <= end*dir; change += dir) {
             int p = pieces[idx + change];
             if (change == 8 || change == -8) { // Straight up/down
                 if (p == 0)
