@@ -45,15 +45,16 @@ public class Sketch extends PApplet {
                 default:
                     yield "";
             };
-            whitePieces[i-1] = loadImage( "sprites/ChessPiecesv1/White/white"+piece+"_v1.png");
-            blackPieces[i-1] = loadImage( "sprites/ChessPiecesv1/Black/black"+piece+"_v1.png");
+            whitePieces[i-1] = loadImage( "sprites/ChessPiecesv2/White/white"+piece+"_v2.png");
+            blackPieces[i-1] = loadImage( "sprites/ChessPiecesv2/Black/black"+piece+"_v2.png");
         }
 
     }
 
+
     private void drawBoard () {
-        // BACKGROUND
-        fill(20, 100, 135);
+        // BACKGROUND: (Possible dark square colors: (40, 84, 50), (11, 41, 23), (37, 45, 64), (87, 27, 20))
+        fill(40, 84, 50);
         noStroke();
         background(237, 226, 199);
         float squareWidth = width / 8f;
