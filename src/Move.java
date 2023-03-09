@@ -11,10 +11,12 @@ public class Move {
         this.capturedPiece = capturedPiece;
     }
 
+    // returns check
     public boolean isCheck () {
         return check;
     }
 
+    // returns which piece was captured
     public int getCapturedPiece () {
         return capturedPiece;
     }

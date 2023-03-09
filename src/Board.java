@@ -14,18 +14,18 @@ public class Board {
     private LinkedList<Move> possibleMoves;
     private Stack<Move> pastMoves;
 
-    int[][] pieces;
+    int[] pieces;
 
     public Board () {
-        pieces = new int[][]{
-                {-R,-N,-B,-Q,-K,-B,-N,-R}, // Black Pieces
-                {-P,-P,-P,-P,-P,-P,-P,-P}, // Black Pawns
-                {0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0},
-                {0, 0, 0, 0, 0, 0, 0, 0},
-                {P, P, P, P, P, P, P, P}, // White Pieces
-                {R, N, B, Q, K, B, N, R}, // White Pawns
+        pieces = new int[]{
+                -R,-N,-B,-Q,-K,-B,-N,-R, // Black Pieces
+                -P,-P,-P,-P,-P,-P,-P,-P, // Black Pawns
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                P, P, P, P, P, P, P, P, // White Pieces
+                R, N, B, Q, K, B, N, R // White Pawns
         };
 
     }
@@ -47,6 +47,35 @@ public class Board {
     private boolean moveValid (int[] start, int[] end) {
         return false; // STUB
     }
+
+    private int row (int idx) {
+        return idx/8;
+    }
+
+    private int column (int idx) {
+        return idx % 8;
+    }
+
+    private void addPawnMoves (int idx) {
+
+    }
+
+    private void addKnightMoves (int idx) {
+
+    }
+
+    private void addBishopMoves (int idx) {
+
+    }
+
+    private void addRookMoves (int idx) {
+
+    }
+
+    private void addKingMoves (int idx) {
+
+    }
+
 
     private void updatePossibleMoves () {
         possibleMoves = new LinkedList<>();
