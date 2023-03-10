@@ -57,7 +57,32 @@ public class Board {
     }
 
     private void addPawnMoves (int idx) {
+        // TODO : Holy hell
+        int color = (pieces[idx] > 0) ? 1 : -1;
+        int dir = -color; // White moves up, black moves down
+        int col = column(idx);
+        int start;
+        int end;
+        if ((idx+7*dir)%8 == 0 || (idx+7+dir)%8 == 7)
+            start = 8;
+        if ((idx+9*dir)%8 == 0 || (idx+9+dir)%8 == 7)
+            end = 8;
 
+        start = 7;
+        end = 9;
+
+
+        for (int change = start*dir; change <= end*dir; change += dir) {
+            int p = pieces[idx + change];
+            if (change == 8 || change == -8) { // Straight up/down
+                if (p == 0)
+                    possibleMoves.push(new Move(idx, idx + change, false, 0));
+            }
+            else {
+                if (p*color < 0) // If different colors
+                    possibleMoves.push(new Move(idx, idx+change, false, p));
+            }
+        }
     }
 
     private void addKnightMoves (int idx) {
@@ -81,7 +106,25 @@ public class Board {
 
 
     private void addBishopMoves (int idx) {
+        int color = (pieces[idx] > 0) ? 1 : -1;
+        boolean blocked = false;
 
+        int[] deltas = {9, -9, 7, -7};
+
+        for (int d : deltas) {
+            for (int change = d; idx + change < pieces.length && !blocked; change += d) {
+                int p = pieces[idx + change];
+                if (color * p > 0) {
+                    // If blocked by the same color, don't add a new move
+                    blocked = true;
+                    continue;
+                } else if (color * p < 0) {
+                    // If blocked by different color, add a move where you capture, but no more
+                    blocked = true;
+                }
+                possibleMoves.push(new Move(idx, idx + change, false, p)); // TODO : CHECKS
+            }
+        }
     }
 
     private void addRookMoves (int idx) {
