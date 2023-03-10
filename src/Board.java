@@ -44,8 +44,8 @@ public class Board {
     }
 
     // checks if a move is valid
-    private boolean moveValid (int[] start, int[] end) {
-        return false; // STUB
+    private boolean moveValid (Move move) {
+        return possibleMoves.contains(move); // STUB
     }
 
     private int row (int idx) {
@@ -62,14 +62,134 @@ public class Board {
 
     private void addKnightMoves (int idx) {
 
-    }
+        int[] idxChange = {-17,-15,-10,-6, 6, 10, 15, 17};
+        int[] hozChange = {-1, 1, -2, 2, -2, 2, -1, 1};
+        if(Math.abs(pieces[idx]) == Math.abs(N)) {
+
+            int column = column(idx);
+
+
+            for(int i =0; i<idxChange.length; i++){
+                if(idxChange[i]>-1 && idxChange[i] < pieces.length) {
+                    if(hozChange[i]+column<8 && hozChange[i]+column>-1)
+                        if(pieces[idx +idxChange[i]]*pieces[idx]<=0)
+                            possibleMoves.add(new Move(idx, idx+idxChange[i], false, pieces[idx+idxChange[i]]));
+                }
+            }
+            }
+        }
+
 
     private void addBishopMoves (int idx) {
 
     }
 
     private void addRookMoves (int idx) {
+        if(Math.abs(pieces[idx]) == Math.abs(R)){
 
+            int row = row(idx);
+            int column = column(idx);
+
+            // if white
+            if (pieces[idx]>0){
+                // up vertical moves
+                for(int i =1; i<8-row;i++){
+                    if(pieces[idx-8*i]<0) {
+                        possibleMoves.add(new Move(idx, idx - 8 * i, false, pieces[idx - 8 * i]));
+                        break;
+                    }
+                    else if(pieces[idx-8*i]>0)
+                        break;
+                    else
+                        possibleMoves.add(new Move(idx, idx-8*i, false, 0));
+                }
+                // down vertical moves
+                for(int i =1; i<row;i++){
+                    if(pieces[idx+8*i]<0) {
+                        possibleMoves.add(new Move(idx, idx + 8* i, false, pieces[idx - 8 * i]));
+                        break;
+                    }
+                    else if(pieces[idx+8*i]>0)
+                        break;
+                    else
+                        possibleMoves.add(new Move(idx, idx +8* i, false, 0));
+                }
+
+                // left horizontal moves
+                for(int i =1; i<8-column;i++){
+                    if(pieces[idx+i]<0) {
+                        possibleMoves.add(new Move(idx, idx +  i, false, pieces[idx +  i]));
+                        break;
+                    }
+                    else if(pieces[idx+8*i]>0)
+                        break;
+                    else
+                        possibleMoves.add(new Move(idx, idx+i, false, 0));
+                }
+                // right horizontal moves
+                for(int i =1; i<column;i++){
+                    if(pieces[idx-i]<0) {
+                        possibleMoves.add(new Move(idx, idx -  i, false, pieces[idx -  i]));
+                        break;
+                    }
+                    else if(pieces[idx-i]>0)
+                        break;
+                    else
+                        possibleMoves.add(new Move(idx, idx-i, false, 0));
+                }
+
+            }
+            // if black
+            else{
+
+                // up vertical moves
+                for(int i =1; i<8-row;i++){
+                    if(pieces[idx-8*i]>0) {
+                        possibleMoves.add(new Move(idx, idx - 8 * i, false, pieces[idx - 8 * i]));
+                        break;
+                    }
+                    else if(pieces[idx-8*i]<0)
+                        break;
+                    else
+                        possibleMoves.add(new Move(idx, idx-8*i, false, 0));
+                }
+                // down vertical moves
+                for(int i =1; i<row;i++){
+                    if(pieces[idx+8*i]>0) {
+                        possibleMoves.add(new Move(idx, idx + 8* i, false, pieces[idx - 8 * i]));
+                        break;
+                    }
+                    else if(pieces[idx+8*i]<0)
+                        break;
+                    else
+                        possibleMoves.add(new Move(idx, idx +8* i, false, 0));
+                }
+
+                // left horizontal moves
+                for(int i =1; i<8-column;i++){
+                    if(pieces[idx+i]>0) {
+                        possibleMoves.add(new Move(idx, idx +  i, false, pieces[idx +  i]));
+                        break;
+                    }
+                    else if(pieces[idx+8*i]<0)
+                        break;
+                    else
+                        possibleMoves.add(new Move(idx, idx+i, false, 0));
+                }
+                // right horizontal moves
+                for(int i =1; i<column;i++){
+                    if(pieces[idx-i]>0) {
+                        possibleMoves.add(new Move(idx, idx -  i, false, pieces[idx -  i]));
+                        break;
+                    }
+                    else if(pieces[idx-i]<0)
+                        break;
+                    else
+                        possibleMoves.add(new Move(idx, idx-i, false, 0));
+                }
+
+            }
+        }
     }
 
     private void addKingMoves (int idx) {
