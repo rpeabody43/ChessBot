@@ -236,7 +236,21 @@ public class Board {
     }
 
     private void addKingMoves (int idx) {
-
+        int[] idxChange = {-9,-8,-7,-1,1,7,8,9};
+        int[] rizzChange = {-1,0,1,-1,1,-1,0,1};
+        if(Math.abs(pieces[idx])==Math.abs(K)){
+            int row = row(idx);
+            int col = column(idx);
+            for(int i = 0; i<idxChange.length; i++){
+                if(idxChange[i]>-1 && idxChange[i]<pieces.length){
+                    if(rizzChange[i]+col <8 && rizzChange[i]+col>-1){
+                        if(pieces[idx + idxChange[i]]*pieces[idx]<=0){
+                            possibleMoves.add(new Move(idx, idx+idxChange[i], false, pieces[idx+idxChange[i]]));
+                        }
+                    }
+                }
+            }
+        }
     }
 
 
