@@ -135,7 +135,20 @@ public class Board {
 
             int row = row(idx);
             int column = column(idx);
-
+            //this probably doesn't work but replit doesn't show red squiggly lines !!
+            int[] idxChange = {-1,-8,1,8};
+            int[] maxIterations = {column,row,7-column,7-row};
+            for(int i=0;i<4;i++){
+              for(int j=0;j<maxIterations[i];j++){
+                if(pieces[idx+idxChange[i]*j]*pieces[idx]<=0){
+                  possibleMoves.add(new Move(idx,idx+idxChange[i]*j,false,pieces[idx+idxChange[i]*j]));
+                  if (pieces[idx+idxChange[i]*j]*pieces[idx]<0) break;
+                }else{
+                  break;
+                }
+              }
+            }
+            /*
             // if white
             if (pieces[idx]>0){
                 // up vertical moves
@@ -234,7 +247,7 @@ public class Board {
                         possibleMoves.add(new Move(idx, idx-i, false, 0));
                 }
 
-            }
+            }*/
         }
     }
 
