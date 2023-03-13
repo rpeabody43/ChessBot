@@ -14,17 +14,20 @@ public class Board {
     private LinkedList<Move> possibleMoves;
     private Stack<Move> pastMoves;
 
+    int numActualMoves;
     int[] pieces;
 
     public Board () {
         pieces = new int[]{
                 -R,-N,-B,-Q,-K,-B,-N,-R, // Black Pieces
-                -P,-P,-P,-P,-P,-P,-P,-P, // Black Pawns
+//                -P,-P,-P,-P,-P,-P,-P,-P, // Black Pawns
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
-                P, P, P, P, P, P, P, P, // White Pieces
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+//                P, P, P, P, P, P, P, P, // White Pieces
                 R, N, B, Q, K, B, N, R // White Pawns
         };
 
@@ -95,9 +98,9 @@ public class Board {
 
 
             for(int i =0; i<idxChange.length; i++){
-                if(idxChange[i]>-1 && idxChange[i] < pieces.length) {
+                if(idx+idxChange[i]>-1 && idx+idxChange[i] < pieces.length) {
                     if(hozChange[i]+column<8 && hozChange[i]+column>-1)
-                        if(pieces[idx +idxChange[i]]*pieces[idx]<=0)
+                        if(pieces[idx+idxChange[i]]*pieces[idx]<=0)
                             possibleMoves.add(new Move(idx, idx+idxChange[i], false, pieces[idx+idxChange[i]]));
                 }
             }
@@ -136,7 +139,7 @@ public class Board {
             // if white
             if (pieces[idx]>0){
                 // up vertical moves
-                for(int i =1; i<8-row;i++){
+                for(int i =1; i<row;i++){
                     if(pieces[idx-8*i]<0) {
                         possibleMoves.add(new Move(idx, idx - 8 * i, false, pieces[idx - 8 * i]));
                         break;
@@ -147,7 +150,7 @@ public class Board {
                         possibleMoves.add(new Move(idx, idx-8*i, false, 0));
                 }
                 // down vertical moves
-                for(int i =1; i<row;i++){
+                for(int i =1; i<8-row;i++){
                     if(pieces[idx+8*i]<0) {
                         possibleMoves.add(new Move(idx, idx + 8* i, false, pieces[idx - 8 * i]));
                         break;
@@ -159,18 +162,18 @@ public class Board {
                 }
 
                 // left horizontal moves
-                for(int i =1; i<8-column;i++){
-                    if(pieces[idx+i]<0) {
-                        possibleMoves.add(new Move(idx, idx +  i, false, pieces[idx +  i]));
+                for(int i =1; i<column;i++){
+                    if(pieces[idx-i]<0) {
+                        possibleMoves.add(new Move(idx, idx -  i, false, pieces[idx +  i]));
                         break;
                     }
-                    else if(pieces[idx+8*i]>0)
+                    else if(pieces[idx-8*i]>0)
                         break;
                     else
-                        possibleMoves.add(new Move(idx, idx+i, false, 0));
+                        possibleMoves.add(new Move(idx, idx-i, false, 0));
                 }
                 // right horizontal moves
-                for(int i =1; i<column;i++){
+                for(int i =1; i<8-column;i++){
                     if(pieces[idx-i]<0) {
                         possibleMoves.add(new Move(idx, idx -  i, false, pieces[idx -  i]));
                         break;
@@ -239,9 +242,31 @@ public class Board {
 
     }
 
+    public LinkedList<Move> getPossibleMoves() {
+        updatePossibleMoves();
+        return possibleMoves;
+    }
 
     private void updatePossibleMoves () {
         possibleMoves = new LinkedList<>();
+        for (int i=0;i<pieces.length;i++) {
+            int piece = pieces[i];
+            int whichColor = numActualMoves % 2 == 0 ? 1 : -1;
+            if(piece * whichColor > 0) {
+                switch (Math.abs(piece)) {
+                    case P -> addPawnMoves(i);
+                    case N -> addKnightMoves(i);
+                    case B -> addBishopMoves(i);
+                    case R -> addRookMoves(i);
+                    case Q -> {
+                        addBishopMoves(i);
+                        addRookMoves(i); // TODO : Prevent queen from castling
+                    }
+                    case K -> addKingMoves(i);
+                }
+            }
+        }
+
         // for piece in board
             // if bishop get bishop moves, etc.
 

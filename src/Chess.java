@@ -1,3 +1,5 @@
+import java.util.LinkedList;
+
 public class Chess {
     private Player p1;
     private Player p2;
@@ -12,6 +14,17 @@ public class Chess {
 
     public Board currentBoard () {
         return board;
+    }
+
+    public LinkedList<Move> possibleMovesAtPosition (int idx) {
+        LinkedList<Move> allMoves = board.getPossibleMoves();
+        LinkedList<Move> ret = new LinkedList<>();
+
+        for (Move m : allMoves) {
+            if (m.getStartIdx() == idx)
+                ret.push(m);
+        }
+        return ret;
     }
 
 }

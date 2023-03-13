@@ -1,11 +1,15 @@
 import processing.core.PApplet;
 import processing.core.PImage;
 
+import java.util.LinkedList;
+
 public class Sketch extends PApplet {
 
     private Chess chess;
     private PImage[] whitePieces;
     private PImage[] blackPieces;
+
+    private int selectedSquare;
 
     public static void main (String[] args) {
         String[] processingArgs = {"ChessAI"};
@@ -15,6 +19,7 @@ public class Sketch extends PApplet {
 
     public Sketch () {
         this.chess = new Chess(new HPlayer(), new AIPlayer());
+        this.selectedSquare = -1;
     }
 
     @Override
@@ -51,6 +56,40 @@ public class Sketch extends PApplet {
 
     }
 
+    private LinkedList<Integer> possibleMovesAtSelectedSq () {
+        LinkedList<Integer> dotIdxs = new LinkedList<>();
+        LinkedList<Move> possibleMoves = chess.possibleMovesAtPosition(selectedSquare);
+
+        boolean pieceFound = false;
+        for (Move m : possibleMoves) {
+            if (m.getStartIdx() != selectedSquare) {
+                if (pieceFound)
+                    break;
+                else continue;
+            }
+            pieceFound = true;
+            int endIdx = m.getEndIdx();
+            if (dotIdxs.size() == 0) {
+                // If there's nothing in the list, add this move
+                dotIdxs.add(endIdx);
+            } else if (dotIdxs.get(0) > endIdx) {
+                // If everything in the list > endIdx, add to beginning
+                dotIdxs.add(0, endIdx);
+            } else if (dotIdxs.get(dotIdxs.size() - 1) < endIdx) {
+                // If everything in the list < endidx, add to end
+                dotIdxs.add(dotIdxs.size(), endIdx);
+            } else {
+                // Find the point in the list where the next value < endIdx
+                int i = 0;
+                while (dotIdxs.get(i) < endIdx) {
+                    i++;
+                }
+                dotIdxs.add(i, endIdx);
+            }
+        }
+        return dotIdxs;
+    }
+
 
     private void drawBoard () {
         // BACKGROUND: (Possible dark square colors: (40, 84, 50), (11, 41, 23), (37, 45, 64), (87, 27, 20))
@@ -59,25 +98,40 @@ public class Sketch extends PApplet {
         background(237, 226, 199);
         float squareWidth = width / 8f;
         int[] currentBoard = chess.currentBoard().pieces;
+
+        LinkedList<Integer> dotIdxs;
+        if (selectedSquare != -1) {
+            dotIdxs = possibleMovesAtSelectedSq();
+        }
+        else dotIdxs = new LinkedList<>();
+
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
-                if ((i + j) % 2 == 1)
+                if ((i + j) % 2 == 1) {
                     square(squareWidth * j, squareWidth * i, squareWidth);
+                }
+                if (i*8 + j == selectedSquare) {
+                    pushStyle();
+                    fill(255, 234, 0, 100);
+                    square(squareWidth * j, squareWidth * i, squareWidth);
+                    popStyle();
+                }
                 int piece = currentBoard[i*8+j];
-                char letter = switch (Math.abs(piece)) {
-                    case Board.P: yield 'P';
-                    case Board.N: yield 'N';
-                    case Board.B: yield 'B';
-                    case Board.R: yield 'R';
-                    case Board.Q: yield 'Q';
-                    case Board.K: yield 'K';
-                    default: yield ' ';
-                };
                 if (piece != 0) {
                     int absPiece = Math.abs(piece);
                     PImage sprite = piece > 0 ? whitePieces[absPiece - 1] : blackPieces[absPiece - 1];
                     image(sprite, squareWidth * j, squareWidth * i, squareWidth, squareWidth);
                 }
+                if (dotIdxs.size() > 0 && i*8 + j == dotIdxs.get(0)) {
+                    ellipseMode(CORNER);
+                    pushStyle();
+                    fill(255, 0, 0);
+                    circle(squareWidth * j, squareWidth * i, squareWidth - 10);
+                    popStyle();
+                    dotIdxs.remove(); // Remove the first element
+                }
+
+
             }
         }
     }
@@ -90,6 +144,11 @@ public class Sketch extends PApplet {
 
     @Override
     public void mouseClicked() {
+        int row = mouseY*8 / height;
+        int col = mouseX*8 / width;
+
+        selectedSquare = row*8 + col;
+
         return; // STUB
         // Something like
         // Set variables x1, y1 to first mouse click

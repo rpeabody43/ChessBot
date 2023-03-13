@@ -20,4 +20,12 @@ public class Move {
     public int getCapturedPiece () {
         return capturedPiece;
     }
+
+    public int getStartIdx () {
+        return start;
+    }
+
+    public int getEndIdx () {
+        return end;
+    }
 }
