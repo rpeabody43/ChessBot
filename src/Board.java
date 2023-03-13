@@ -245,7 +245,7 @@ public class Board {
             int row = row(idx);
             int col = column(idx);
             for(int i = 0; i<idxChange.length; i++){
-                if(idxChange[i]>-1 && idxChange[i]<pieces.length){
+                if(idx +idxChange[i]>-1 && idx + idxChange[i]<pieces.length){
                     if(rizzChange[i]+col <8 && rizzChange[i]+col>-1){
                         if(pieces[idx + idxChange[i]]*pieces[idx]<=0){
                             possibleMoves.add(new Move(idx, idx+idxChange[i], false, pieces[idx+idxChange[i]]));
