@@ -28,7 +28,7 @@ public class Board {
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
 //                P, P, P, P, P, P, P, P, // White Pawns
-                0, N, B, Q, K, B, N, 0 // White Pieces
+                R, N, B, Q, K, B, N, R // White Pieces
         };
 
     }
