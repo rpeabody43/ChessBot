@@ -27,8 +27,8 @@ public class Board {
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
-//                P, P, P, P, P, P, P, P, // White Pieces
-                R, N, B, Q, K, B, N, R // White Pawns
+//                P, P, P, P, P, P, P, P, // White Pawns
+                0, N, B, Q, K, B, N, 0 // White Pieces
         };
 
     }
@@ -66,16 +66,17 @@ public class Board {
         int col = column(idx);
         int start;
         int end;
+        // start is the leftmost move a pawn can make (when capturing)
+        // end is the rightmost move a pawn can make
+        start = 7;
+        end = 9;
         if ((idx+7*dir)%8 == 0 || (idx+7+dir)%8 == 7)
             start = 8;
         if ((idx+9*dir)%8 == 0 || (idx+9+dir)%8 == 7)
             end = 8;
 
-        start = 7;
-        end = 9;
 
-
-        for (int change = start*dir; change <= end*dir; change += dir) {
+        for (int change = start*dir; Math.abs(change) <= Math.abs(end); change += dir) {
             int p = pieces[idx + change];
             if (change == 8 || change == -8) { // Straight up/down
                 if (p == 0)
@@ -110,12 +111,21 @@ public class Board {
 
     private void addBishopMoves (int idx) {
         int color = (pieces[idx] > 0) ? 1 : -1;
-        boolean blocked = false;
-
         int[] deltas = {9, -9, 7, -7};
 
         for (int d : deltas) {
+            boolean blocked = false;
             for (int change = d; idx + change < pieces.length && !blocked; change += d) {
+                int newIdx = idx + change;
+                int col = column(newIdx);
+                if (newIdx < 0 || newIdx >= pieces.length) {
+                    blocked = true;
+                    continue;
+                }
+
+                if (col == 0 || col == 7)
+                    blocked = true;
+
                 int p = pieces[idx + change];
                 if (color * p > 0) {
                     // If blocked by the same color, don't add a new move
