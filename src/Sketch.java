@@ -147,6 +147,9 @@ public class Sketch extends PApplet {
         int row = mouseY*8 / height;
         int col = mouseX*8 / width;
 
+        if(selectedSquare!=-1 && possibleMovesAtSelectedSq().contains(row*8+col)){
+            chess.makeMove(selectedSquare,row*8+col);
+        }
         selectedSquare = row*8 + col;
 
         return; // STUB

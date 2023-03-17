@@ -20,14 +20,14 @@ public class Board {
     public Board () {
         pieces = new int[]{
                 -R,-N,-B,-Q,-K,-B,-N,-R, // Black Pieces
-//                -P,-P,-P,-P,-P,-P,-P,-P, // Black Pawns
+                -P,-P,-P,-P,-P,-P,-P,-P, // Black Pawns
+//                0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-//                P, P, P, P, P, P, P, P, // White Pawns
+//                0, 0, 0, 0, -P, 0, 0, 0,
+                P, P, P, P, P, P, P, P, // White Pawns
                 R, N, B, Q, K, B, N, R // White Pieces
         };
 
@@ -140,124 +140,24 @@ public class Board {
         }
     }
 
-    private void addRookMoves (int idx) {
-        if(Math.abs(pieces[idx]) == Math.abs(R)){
+    private void addRookMoves (int idx) { //do a castle check
+        if(Math.abs(pieces[idx]) == Math.abs(R) || Math.abs(pieces[idx])==Math.abs(Q)){
 
             int row = row(idx);
             int column = column(idx);
             //this probably doesn't work but replit doesn't show red squiggly lines !!
             int[] idxChange = {-1,-8,1,8};
             int[] maxIterations = {column,row,7-column,7-row};
-            for(int i=0;i<4;i++){
-              for(int j=0;j<maxIterations[i];j++){
-                if(pieces[idx+idxChange[i]*j]*pieces[idx]<=0){
-                  possibleMoves.add(new Move(idx,idx+idxChange[i]*j,false,pieces[idx+idxChange[i]*j]));
-                  if (pieces[idx+idxChange[i]*j]*pieces[idx]<0) break;
-                }else{
-                  break;
+            for(int i=0;i<4;i++) {
+                for (int j = 1; j <= maxIterations[i]; j++) {
+                    if (pieces[idx + idxChange[i] * j] * pieces[idx] <= 0) {
+                        possibleMoves.add(new Move(idx, idx + idxChange[i] * j, false, pieces[idx + idxChange[i] * j]));
+                        if (pieces[idx + idxChange[i] * j] * pieces[idx] < 0) break;
+                    } else {
+                        break;
+                    }
                 }
-              }
             }
-            /*
-            // if white
-            if (pieces[idx]>0){
-                // up vertical moves
-                for(int i =1; i<row;i++){
-                    if(pieces[idx-8*i]<0) {
-                        possibleMoves.add(new Move(idx, idx - 8 * i, false, pieces[idx - 8 * i]));
-                        break;
-                    }
-                    else if(pieces[idx-8*i]>0)
-                        break;
-                    else
-                        possibleMoves.add(new Move(idx, idx-8*i, false, 0));
-                }
-                // down vertical moves
-                for(int i =1; i<8-row;i++){
-                    if(pieces[idx+8*i]<0) {
-                        possibleMoves.add(new Move(idx, idx + 8* i, false, pieces[idx - 8 * i]));
-                        break;
-                    }
-                    else if(pieces[idx+8*i]>0)
-                        break;
-                    else
-                        possibleMoves.add(new Move(idx, idx +8* i, false, 0));
-                }
-
-                // left horizontal moves
-                for(int i =1; i<column;i++){
-                    if(pieces[idx-i]<0) {
-                        possibleMoves.add(new Move(idx, idx -  i, false, pieces[idx +  i]));
-                        break;
-                    }
-                    else if(pieces[idx-8*i]>0)
-                        break;
-                    else
-                        possibleMoves.add(new Move(idx, idx-i, false, 0));
-                }
-                // right horizontal moves
-                for(int i =1; i<8-column;i++){
-                    if(pieces[idx-i]<0) {
-                        possibleMoves.add(new Move(idx, idx -  i, false, pieces[idx -  i]));
-                        break;
-                    }
-                    else if(pieces[idx-i]>0)
-                        break;
-                    else
-                        possibleMoves.add(new Move(idx, idx-i, false, 0));
-                }
-
-            }
-            // if black
-            else{
-
-                // up vertical moves
-                for(int i =1; i<8-row;i++){
-                    if(pieces[idx-8*i]>0) {
-                        possibleMoves.add(new Move(idx, idx - 8 * i, false, pieces[idx - 8 * i]));
-                        break;
-                    }
-                    else if(pieces[idx-8*i]<0)
-                        break;
-                    else
-                        possibleMoves.add(new Move(idx, idx-8*i, false, 0));
-                }
-                // down vertical moves
-                for(int i =1; i<row;i++){
-                    if(pieces[idx+8*i]>0) {
-                        possibleMoves.add(new Move(idx, idx + 8* i, false, pieces[idx - 8 * i]));
-                        break;
-                    }
-                    else if(pieces[idx+8*i]<0)
-                        break;
-                    else
-                        possibleMoves.add(new Move(idx, idx +8* i, false, 0));
-                }
-
-                // left horizontal moves
-                for(int i =1; i<8-column;i++){
-                    if(pieces[idx+i]>0) {
-                        possibleMoves.add(new Move(idx, idx +  i, false, pieces[idx +  i]));
-                        break;
-                    }
-                    else if(pieces[idx+8*i]<0)
-                        break;
-                    else
-                        possibleMoves.add(new Move(idx, idx+i, false, 0));
-                }
-                // right horizontal moves
-                for(int i =1; i<column;i++){
-                    if(pieces[idx-i]>0) {
-                        possibleMoves.add(new Move(idx, idx -  i, false, pieces[idx -  i]));
-                        break;
-                    }
-                    else if(pieces[idx-i]<0)
-                        break;
-                    else
-                        possibleMoves.add(new Move(idx, idx-i, false, 0));
-                }
-
-            }*/
         }
     }
 
