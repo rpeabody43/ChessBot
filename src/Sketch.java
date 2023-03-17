@@ -123,10 +123,9 @@ public class Sketch extends PApplet {
                     image(sprite, squareWidth * j, squareWidth * i, squareWidth, squareWidth);
                 }
                 if (dotIdxs.size() > 0 && i*8 + j == dotIdxs.get(0)) {
-                    ellipseMode(CORNER);
                     pushStyle();
-                    fill(255, 0, 0);
-                    circle(squareWidth * j, squareWidth * i, squareWidth - 10);
+                    fill(40);
+                    circle( squareWidth * (j + 0.5f), squareWidth * (i + 0.5f), squareWidth/2f);
                     popStyle();
                     dotIdxs.remove(); // Remove the first element
                 }
