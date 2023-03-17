@@ -29,6 +29,7 @@ public class Board {
                 R, N, B, Q, K, B, N, R // White Pieces
         };
 
+        pastMoves = new Stack<>();
     }
 
 
@@ -40,8 +41,16 @@ public class Board {
 
     // For AI player / Internally
     // Board is 1D
-    public void makeMove (int start, int end) {
+    public void makeMove (Move m) {
+        System.out.println("test");
+        int start = m.getStartIdx();
+        int end = m.getEndIdx();
+        pieces[end] = pieces[start];
+        pieces[start] = 0;
+        numActualMoves++;
 
+        pastMoves.push(m);
+        possibleMoves.clear();
     }
 
     // checks if a move is valid

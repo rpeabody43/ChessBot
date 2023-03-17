@@ -26,10 +26,8 @@ public class Chess {
         }
         return ret;
     }
-    public void makeMove(int start, int end){
-        currentBoard().pieces[end]= currentBoard().pieces[start];
-        currentBoard().pieces[start]=0;
-        currentBoard().numActualMoves++;
+    public void makeMove(Move m){
+        board.makeMove(m);
     }
 
 }

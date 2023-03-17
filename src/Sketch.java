@@ -1,6 +1,7 @@
 import processing.core.PApplet;
 import processing.core.PImage;
 
+import java.util.HashMap;
 import java.util.LinkedList;
 
 public class Sketch extends PApplet {
@@ -10,6 +11,7 @@ public class Sketch extends PApplet {
     private PImage[] blackPieces;
 
     private int selectedSquare;
+    private HashMap<Integer, Move> possibleMoves;
 
     public static void main (String[] args) {
         String[] processingArgs = {"ChessAI"};
@@ -56,12 +58,12 @@ public class Sketch extends PApplet {
 
     }
 
-    private LinkedList<Integer> possibleMovesAtSelectedSq () {
-        LinkedList<Integer> dotIdxs = new LinkedList<>();
-        LinkedList<Move> possibleMoves = chess.possibleMovesAtPosition(selectedSquare);
+    private HashMap<Integer, Move> possibleMovesAtSelectedSq () {
+        HashMap<Integer, Move> ret = new HashMap<>();
+        LinkedList<Move> allPossibleMoves = chess.possibleMovesAtPosition(selectedSquare);
 
         boolean pieceFound = false;
-        for (Move m : possibleMoves) {
+        for (Move m : allPossibleMoves) {
             if (m.getStartIdx() != selectedSquare) {
                 if (pieceFound)
                     break;
@@ -69,27 +71,10 @@ public class Sketch extends PApplet {
             }
             pieceFound = true;
             int endIdx = m.getEndIdx();
-            if (dotIdxs.size() == 0) {
-                // If there's nothing in the list, add this move
-                dotIdxs.add(endIdx);
-            } else if (dotIdxs.get(0) > endIdx) {
-                // If everything in the list > endIdx, add to beginning
-                dotIdxs.add(0, endIdx);
-            } else if (dotIdxs.get(dotIdxs.size() - 1) < endIdx) {
-                // If everything in the list < endidx, add to end
-                dotIdxs.add(dotIdxs.size(), endIdx);
-            } else {
-                // Find the point in the list where the next value < endIdx
-                int i = 0;
-                while (dotIdxs.get(i) < endIdx) {
-                    i++;
-                }
-                dotIdxs.add(i, endIdx);
-            }
+            ret.put(endIdx, m);
         }
-        return dotIdxs;
+        return ret;
     }
-
 
     private void drawBoard () {
         // BACKGROUND: (Possible dark square colors: (40, 84, 50), (11, 41, 23), (37, 45, 64), (87, 27, 20))
@@ -99,11 +84,10 @@ public class Sketch extends PApplet {
         float squareWidth = width / 8f;
         int[] currentBoard = chess.currentBoard().pieces;
 
-        LinkedList<Integer> dotIdxs;
         if (selectedSquare != -1) {
-            dotIdxs = possibleMovesAtSelectedSq();
+            possibleMoves = possibleMovesAtSelectedSq();
         }
-        else dotIdxs = new LinkedList<>();
+        else possibleMoves = new HashMap<>();
 
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
@@ -122,15 +106,12 @@ public class Sketch extends PApplet {
                     PImage sprite = piece > 0 ? whitePieces[absPiece - 1] : blackPieces[absPiece - 1];
                     image(sprite, squareWidth * j, squareWidth * i, squareWidth, squareWidth);
                 }
-                if (dotIdxs.size() > 0 && i*8 + j == dotIdxs.get(0)) {
+                if (possibleMoves.containsKey(i*8 + j)) {
                     pushStyle();
                     fill(40);
                     circle( squareWidth * (j + 0.5f), squareWidth * (i + 0.5f), squareWidth/2f);
                     popStyle();
-                    dotIdxs.remove(); // Remove the first element
                 }
-
-
             }
         }
     }
@@ -146,15 +127,9 @@ public class Sketch extends PApplet {
         int row = mouseY*8 / height;
         int col = mouseX*8 / width;
 
-        if(selectedSquare!=-1 && possibleMovesAtSelectedSq().contains(row*8+col)){
-            chess.makeMove(selectedSquare,row*8+col);
+        if(selectedSquare!=-1 && possibleMoves.containsKey(row*8 + col)){
+            chess.makeMove(possibleMoves.get(row*8 + col));
         }
         selectedSquare = row*8 + col;
-
-        return; // STUB
-        // Something like
-        // Set variables x1, y1 to first mouse click
-        // Set x2, y2 to second mouse click
-        // Pass that to chess to check if a valid move
     }
 }
