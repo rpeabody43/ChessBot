@@ -130,7 +130,6 @@ public class Board {
             }
         }
 
-
     private void addBishopMoves (int idx) {
         int color = (pieces[idx] > 0) ? 1 : -1;
         int[] deltas = {9, -9, 7, -7};
@@ -141,6 +140,11 @@ public class Board {
                 int newIdx = idx + change;
                 int col = column(newIdx);
                 if (newIdx < 0 || newIdx >= pieces.length) {
+                    blocked = true;
+                    continue;
+                }
+
+                if (Math.abs(col - column(idx)) == 7) {
                     blocked = true;
                     continue;
                 }
