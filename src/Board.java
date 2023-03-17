@@ -61,16 +61,15 @@ public class Board {
         // TODO : Holy hell
         int color = (pieces[idx] > 0) ? 1 : -1;
         int dir = -color; // White moves up, black moves down
-        int col = column(idx);
         int start;
         int end;
         // start is the leftmost move a pawn can make (when capturing)
         // end is the rightmost move a pawn can make
         start = 7;
         end = 9;
-        if ((idx+7*dir)%8 == 0 || (idx+7+dir)%8 == 7)
+        if ((idx+7*dir)%8 == 0 || (idx+7*dir)%8 == 7)
             start = 8;
-        if ((idx+9*dir)%8 == 0 || (idx+9+dir)%8 == 7)
+        if ((idx+9*dir)%8 == 0 || (idx+9*dir)%8 == 7)
             end = 8;
 
 
