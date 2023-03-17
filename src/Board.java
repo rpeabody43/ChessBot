@@ -17,7 +17,9 @@ public class Board {
     int numActualMoves;
     int[] pieces;
 
+    boolean[] rookMoved; //top left, top right, bottom left, bottom right
     public Board () {
+        rookMoved = new boolean[]{false,false,false,false};
         pieces = new int[]{
                 -R,-N,-B,-Q,-K,-B,-N,-R, // Black Pieces
                 -P,-P,-P,-P,-P,-P,-P,-P, // Black Pawns
@@ -157,6 +159,11 @@ public class Board {
                 for (int j = 1; j <= maxIterations[i]; j++) {
                     if (pieces[idx + idxChange[i] * j] * pieces[idx] <= 0) {
                         possibleMoves.add(new Move(idx, idx + idxChange[i] * j, false, pieces[idx + idxChange[i] * j]));
+                        if(idx==0) rookMoved[0]=true;
+                        else if(idx==7) rookMoved[1]=true;
+                        else if(idx==55) rookMoved[2]=true;
+                        else if(idx==63) rookMoved[3]=true;
+
                         if (pieces[idx + idxChange[i] * j] * pieces[idx] < 0) break;
                     } else {
                         break;
@@ -181,7 +188,9 @@ public class Board {
                     }
                 }
             }
+            //castling
         }
+
     }
 
     public LinkedList<Move> getPossibleMoves() {
