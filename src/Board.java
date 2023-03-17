@@ -44,7 +44,6 @@ public class Board {
     // For AI player / Internally
     // Board is 1D
     public void makeMove (Move m) {
-        System.out.println("test");
         int start = m.getStartIdx();
         int end = m.getEndIdx();
         pieces[end] = pieces[start];
@@ -78,9 +77,17 @@ public class Board {
         // end is the rightmost move a pawn can make
         start = 7;
         end = 9;
-        if ((idx+7*dir)%8 == 0 || (idx+7*dir)%8 == 7)
+
+        int testStart = idx+7*dir;
+        int testEnd = idx+9*dir;
+        if (Math.abs(column(testStart) - column(idx)) == 7)
             start = 8;
-        if ((idx+9*dir)%8 == 0 || (idx+9*dir)%8 == 7)
+        if (Math.abs(column(testEnd) - column(idx)) == 7)
+            end = 8;
+
+        if (testStart >= pieces.length || testStart < 0)
+            start = 8;
+        if (testEnd >= pieces.length || testEnd < 0)
             end = 8;
 
 
@@ -99,7 +106,7 @@ public class Board {
         // If on the starting row for that color
         if ((row(idx) == 6 && color == 1) || (row(idx) == 1 && color == -1)) {
             int newIdx = idx - 16*color;
-            if (pieces[newIdx] == 0)
+            if (pieces[idx - 8*color] == 0 && pieces[newIdx] == 0)
                 possibleMoves.push(new Move(idx, newIdx, false, 0));
         }
     }
