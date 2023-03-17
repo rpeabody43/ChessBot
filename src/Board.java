@@ -21,12 +21,10 @@ public class Board {
         pieces = new int[]{
                 -R,-N,-B,-Q,-K,-B,-N,-R, // Black Pieces
                 -P,-P,-P,-P,-P,-P,-P,-P, // Black Pawns
-//                0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
-//                0, 0, 0, 0, -P, 0, 0, 0,
                 P, P, P, P, P, P, P, P, // White Pawns
                 R, N, B, Q, K, B, N, R // White Pieces
         };
@@ -86,6 +84,13 @@ public class Board {
                 if (p*color < 0) // If different colors
                     possibleMoves.push(new Move(idx, idx+change, false, p));
             }
+        }
+
+        // If on the starting row for that color
+        if ((row(idx) == 6 && color == 1) || (row(idx) == 1 && color == -1)) {
+            int newIdx = idx - 16*color;
+            if (pieces[newIdx] == 0)
+                possibleMoves.push(new Move(idx, newIdx, false, 0));
         }
     }
 
