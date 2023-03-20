@@ -16,12 +16,14 @@ public class Board {
 
     int numActualMoves;
     int[] pieces;
+    boolean[] kingMoved;
 
     int promotingIdx;
 
     boolean[] rookMoved; //top left, top right, bottom left, bottom right
 
     public Board () {
+        kingMoved = new boolean[]{false,false};
         rookMoved = new boolean[]{false,false,false,false};
         pieces = new int[]{
                 -R,-N,-B,-Q,-K,-B,-N,-R, // Black Pieces
@@ -43,8 +45,44 @@ public class Board {
     public void makeMove (Move m) {
         int start = m.getStartIdx();
         int end = m.getEndIdx();
+
+        if(end==0) rookMoved[0]=true;
+        else if(end==7) rookMoved[1]=true;
+        else if(end==55) rookMoved[2]=true;
+        else if(end==63) rookMoved[3]=true;
+
+        if(start==0) rookMoved[0]=true;
+        else if(start==7) rookMoved[1]=true;
+        else if(start==55) rookMoved[2]=true;
+        else if(start==63) rookMoved[3]=true;
+
+        if(start==4) kingMoved[0]=true;
+        else if(start==60) rookMoved[1]=true;
+
+        if(start == 4|| start==60){
+            if(end==2){
+                pieces[0] = 0;
+                pieces[3] =-R;
+            }
+            else if(end==6){
+                pieces[7] = 0;
+                pieces[5] =-R;
+            }
+            else if(end==58){
+                pieces[56] = 0;
+                pieces[59] =R;
+            }
+            else if(end==62){
+                pieces[63] = 0;
+                pieces[61] =R;
+            }
+
+        }
+
+
         pieces[end] = pieces[start];
         pieces[start] = 0;
+
         numActualMoves++;
 
         pastMoves.push(m);
@@ -188,10 +226,6 @@ public class Board {
                 for (int j = 1; j <= maxIterations[i]; j++) {
                     if (pieces[idx + idxChange[i] * j] * pieces[idx] <= 0) {
                         possibleMoves.add(new Move(idx, idx + idxChange[i] * j, false, pieces[idx + idxChange[i] * j]));
-                        if(idx==0) rookMoved[0]=true;
-                        else if(idx==7) rookMoved[1]=true;
-                        else if(idx==55) rookMoved[2]=true;
-                        else if(idx==63) rookMoved[3]=true;
 
                         if (pieces[idx + idxChange[i] * j] * pieces[idx] < 0) break;
                     } else {
@@ -218,6 +252,27 @@ public class Board {
                 }
             }
             //castling
+            if(pieces[idx]>0 && kingMoved[1]==false){
+              if(rookMoved[3]==false && pieces[61]==0 && pieces[62]==0)
+                  possibleMoves.add(new Move(60, 62, false, 0));
+              if (rookMoved[2]==false && pieces[59]==0 && pieces[58]==0 && pieces[57]==0)
+                possibleMoves.add(new Move(60, 58, false, 0));
+
+            }
+            else if(pieces[idx]<0 && kingMoved[0]==false){
+                if(rookMoved[1]==false && pieces[5]==0 && pieces[6]==0)
+                    possibleMoves.add(new Move(4, 6, false, 0));
+                if (rookMoved[0]==false && pieces[1]==0 && pieces[2]==0 && pieces[3]==0)
+                    possibleMoves.add(new Move(4, 2, false, 0));
+
+
+            }
+
+
+
+
+
+
         }
 
     }
