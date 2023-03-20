@@ -76,6 +76,10 @@ public class Sketch extends PApplet {
         return ret;
     }
 
+    private boolean promoting () {
+        return (chess.currentBoard().getPromotingIdx() > -1);
+    }
+
     private void drawBoard () {
         // BACKGROUND: (Possible dark square colors: (40, 84, 50), (11, 41, 23), (37, 45, 64), (87, 27, 20))
         fill(40, 84, 50);
@@ -114,6 +118,15 @@ public class Sketch extends PApplet {
                 }
             }
         }
+
+        if (promoting()) {
+            stroke(2);
+            fill(0);
+            textSize(50);
+            String promoteText = "PROMOTING:\n1 -> KNIGHT\n2 -> BISHOP\n3->ROOK\n4->QUEEN";
+            textAlign(CENTER);
+            text(promoteText, width / 2f, height / 3f);
+        }
     }
 
     // -- GAMELOOP --
@@ -124,6 +137,7 @@ public class Sketch extends PApplet {
 
     @Override
     public void mouseClicked() {
+        if (promoting()) return;
         int row = mouseY*8 / height;
         int col = mouseX*8 / width;
 
@@ -131,5 +145,17 @@ public class Sketch extends PApplet {
             chess.makeMove(possibleMoves.get(row*8 + col));
         }
         selectedSquare = row*8 + col;
+    }
+
+    @Override
+    public void keyPressed() {
+        if (!promoting()) return;
+
+        switch (key) {
+            case '1' -> chess.promote(Board.N);
+            case '2' -> chess.promote(Board.B);
+            case '3' -> chess.promote(Board.R);
+            case '4' -> chess.promote(Board.Q);
+        }
     }
 }

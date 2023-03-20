@@ -30,4 +30,8 @@ public class Chess {
         board.makeMove(m);
     }
 
+    public void promote (int piece) {
+        board.promote(piece);
+    }
+
 }

@@ -17,7 +17,10 @@ public class Board {
     int numActualMoves;
     int[] pieces;
 
+    int promotingIdx;
+
     boolean[] rookMoved; //top left, top right, bottom left, bottom right
+
     public Board () {
         rookMoved = new boolean[]{false,false,false,false};
         pieces = new int[]{
@@ -32,13 +35,7 @@ public class Board {
         };
 
         pastMoves = new Stack<>();
-    }
-
-
-    // For human player
-    // Board is 2D
-    public void makeMove (int startR, int startF, int endR, int endF) {
-
+        promotingIdx = -1;
     }
 
     // For AI player / Internally
@@ -53,7 +50,18 @@ public class Board {
         pastMoves.push(m);
         possibleMoves.clear();
 
-        this.autoPromote();
+        if (Math.abs(pieces[end]) > P) return;
+        int p = pieces[end];
+        if ((p == 1 && row(end) == 0) || (p == -1 && row(end) == 7)) {
+            promotingIdx = end;
+        }
+    }
+
+    public int getPromotingIdx () { return promotingIdx; }
+
+    public void promote (int piece) {
+        pieces[promotingIdx] = piece * pieces[promotingIdx];
+        promotingIdx = -1;
     }
 
     // checks if a move is valid
@@ -212,21 +220,6 @@ public class Board {
             //castling
         }
 
-    }
-
-    private void autoPromote() {
-        // promotes white pawns
-        for(int i = 0; i<8; i++){
-            if(this.pieces[i] == P){
-                this.pieces[i] = Q;
-            }
-        }
-        // promotes black pawns
-        for(int i = 56; i<64; i++){
-            if(this.pieces[i] == -P){
-                this.pieces[i] = -Q;
-            }
-        }
     }
 
     public LinkedList<Move> getPossibleMoves() {
