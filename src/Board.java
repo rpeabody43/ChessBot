@@ -52,6 +52,8 @@ public class Board {
 
         pastMoves.push(m);
         possibleMoves.clear();
+
+        this.autoPromote();
     }
 
     // checks if a move is valid
@@ -210,6 +212,21 @@ public class Board {
             //castling
         }
 
+    }
+
+    private void autoPromote() {
+        // promotes white pawns
+        for(int i = 0; i<8; i++){
+            if(this.pieces[i] == P){
+                this.pieces[i] = Q;
+            }
+        }
+        // promotes black pawns
+        for(int i = 56; i<64; i++){
+            if(this.pieces[i] == -P){
+                this.pieces[i] = -Q;
+            }
+        }
     }
 
     public LinkedList<Move> getPossibleMoves() {
