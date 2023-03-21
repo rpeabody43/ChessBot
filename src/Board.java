@@ -20,18 +20,27 @@ public class Board {
 
     int promotingIdx;
 
+    public boolean BKiC;
+    public boolean WKiC;
+
     boolean[] rookMoved; //top left, top right, bottom left, bottom right
 
     public Board () {
+        //stores if the kings are in check
+        BKiC = false;
+        WKiC = false;
+
         kingMoved = new boolean[]{false,false};
         rookMoved = new boolean[]{false,false,false,false};
         pieces = new int[]{
                 -R,-N,-B,-Q,-K,-B,-N,-R, // Black Pieces
                 -P,-P,-P,-P,-P,-P,-P,-P, // Black Pawns
+
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
+
                 P, P, P, P, P, P, P, P, // White Pawns
                 R, N, B, Q, K, B, N, R // White Pieces
         };
@@ -88,11 +97,37 @@ public class Board {
         pastMoves.push(m);
         possibleMoves.clear();
 
+        switch (Math.abs(pieces[end])) {
+            case P -> addPawnMoves(end);
+            case N -> addKnightMoves(end);
+            case B -> addBishopMoves(end);
+            case R -> addRookMoves(end);
+            case Q -> {
+                addBishopMoves(end);
+                addRookMoves(end); // TODO : Prevent queen from castling
+            }
+            case K -> addKingMoves(end);
+        }
+
+        for(Move move: possibleMoves){
+            if(numActualMoves%2==0){
+                if (pieces[move.getEndIdx()]==K)
+                    WKiC = true;
+            }else{
+                if(pieces[move.getEndIdx()]==-K)
+                    BKiC=true;
+            }
+
+
+        }
+        possibleMoves.clear();
+        System.out.println("white king in check: "+WKiC + " black king in check: "+BKiC);
         if (Math.abs(pieces[end]) > P) return;
         int p = pieces[end];
         if ((p == 1 && row(end) == 0) || (p == -1 && row(end) == 7)) {
             promotingIdx = end;
         }
+
     }
 
     public int getPromotingIdx () { return promotingIdx; }
@@ -280,6 +315,10 @@ public class Board {
     public LinkedList<Move> getPossibleMoves() {
         updatePossibleMoves();
         return possibleMoves;
+    }
+
+    public Move getRandPossibleMove(){
+        return possibleMoves.get((int)(Math.random() * possibleMoves.size()));
     }
 
     private void updatePossibleMoves () {

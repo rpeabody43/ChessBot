@@ -117,6 +117,7 @@ public class Sketch extends PApplet {
                     popStyle();
                 }
             }
+
         }
 
         if (promoting()) {
@@ -133,6 +134,9 @@ public class Sketch extends PApplet {
     @Override
     public void draw () {
         drawBoard();
+      //  if(chess.currentBoard().numActualMoves%2==1) {
+      //      chess.aiMove();
+      //  }
     }
 
     @Override
