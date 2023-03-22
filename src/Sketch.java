@@ -13,24 +13,25 @@ public class Sketch extends PApplet {
     private int selectedSquare;
     private HashMap<Integer, Move> possibleMoves;
 
-    public static void main (String[] args) {
+    public static void main(String[] args) {
         String[] processingArgs = {"ChessAI"};
         Sketch sketch = new Sketch();
         PApplet.runSketch(processingArgs, sketch);
     }
 
-    public Sketch () {
+    public Sketch() {
         this.chess = new Chess(new HPlayer(), new AIPlayer());
         this.selectedSquare = -1;
     }
 
+    // I LOVE SETTINGS
     @Override
-    public void settings () {
+    public void settings() {
         size(512, 512);
     }
 
     @Override
-    public void setup () {
+    public void setup() {
         String whitePath = "sprites/ChessPiecesv1/White/";
         whitePieces = new PImage[6];
         String blackPath = "sprites/ChessPiecesv1/Black/";
@@ -52,13 +53,13 @@ public class Sketch extends PApplet {
                 default:
                     yield "";
             };
-            whitePieces[i-1] = loadImage( "sprites/ChessPiecesv2/White/white"+piece+"_v2.png");
-            blackPieces[i-1] = loadImage( "sprites/ChessPiecesv2/Black/black"+piece+"_v2.png");
+            whitePieces[i - 1] = loadImage("sprites/ChessPiecesv2/White/white" + piece + "_v2.png");
+            blackPieces[i - 1] = loadImage("sprites/ChessPiecesv2/Black/black" + piece + "_v2.png");
         }
 
     }
 
-    private HashMap<Integer, Move> possibleMovesAtSelectedSq () {
+    private HashMap<Integer, Move> possibleMovesAtSelectedSq() {
         HashMap<Integer, Move> ret = new HashMap<>();
         LinkedList<Move> allPossibleMoves = chess.possibleMovesAtPosition(selectedSquare);
 
@@ -76,58 +77,65 @@ public class Sketch extends PApplet {
         return ret;
     }
 
-    private boolean promoting () {
+    private boolean promoting() {
         return (chess.currentBoard().getPromotingIdx() > -1);
     }
 
-    private void drawBoard () {
-        // BACKGROUND: (Possible dark square colors: (40, 84, 50), (11, 41, 23), (37, 45, 64), (87, 27, 20))
-        fill(40, 84, 50);
+    private void drawBoard() {
+        // TODO pick an actually good dark square color
+        // BACKGROUND: (original dark square color: (40, 84, 50))
+        fill(60, 70, 82);
         noStroke();
         background(237, 226, 199);
         float squareWidth = width / 8f;
         int[] currentBoard = chess.currentBoard().pieces;
+        PImage whitePromoteUI;
+        PImage blackPromoteUI;
 
         if (selectedSquare != -1) {
             possibleMoves = possibleMovesAtSelectedSq();
-        }
-        else possibleMoves = new HashMap<>();
+        } else possibleMoves = new HashMap<>();
 
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 if ((i + j) % 2 == 1) {
                     square(squareWidth * j, squareWidth * i, squareWidth);
                 }
-                if (i*8 + j == selectedSquare) {
+                if (i * 8 + j == selectedSquare) {
                     pushStyle();
                     fill(255, 234, 0, 100);
                     square(squareWidth * j, squareWidth * i, squareWidth);
                     popStyle();
                 }
-                int piece = currentBoard[i*8+j];
+                int piece = currentBoard[i * 8 + j];
                 if (piece != 0) {
                     int absPiece = Math.abs(piece);
                     PImage sprite = piece > 0 ? whitePieces[absPiece - 1] : blackPieces[absPiece - 1];
                     image(sprite, squareWidth * j, squareWidth * i, squareWidth, squareWidth);
                 }
-                if (possibleMoves.containsKey(i*8 + j)) {
+                if (possibleMoves.containsKey(i * 8 + j)) {
                     pushStyle();
                     fill(40);
-                    circle( squareWidth * (j + 0.5f), squareWidth * (i + 0.5f), squareWidth/2f);
+                    circle(squareWidth * (j + 0.5f), squareWidth * (i + 0.5f), squareWidth / 2f);
                     popStyle();
                 }
             }
         }
 
+        // displays a not cursed graphic for promotion
         if (promoting()) {
-            stroke(2);
-            fill(0);
-            textSize(50);
-            String promoteText = "PROMOTING:\n1 -> KNIGHT\n2 -> BISHOP\n3->ROOK\n4->QUEEN";
-            textAlign(CENTER);
-            text(promoteText, width / 2f, height / 3f);
+            if(chess.currentBoard().getPromotingIdx() < 8){
+                whitePromoteUI = loadImage("sprites/PromotingGraphicsv1/WhitePromoteUI_v1.png");
+                image(whitePromoteUI, 128, 128);
+            } else {
+                blackPromoteUI = loadImage("sprites/PromotingGraphicsv1/BlackPromoteUI_v1.png");
+                image(blackPromoteUI, 128, 128);
+            }
         }
     }
+
+
+
 
     // -- GAMELOOP --
     @Override
