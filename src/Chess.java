@@ -34,4 +34,9 @@ public class Chess {
         board.promote(piece);
     }
 
+
+    public void aiMove(){
+        makeMove(board.getRandPossibleMove());
+
+    }
 }

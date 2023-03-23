@@ -120,6 +120,7 @@ public class Sketch extends PApplet {
                     popStyle();
                 }
             }
+
         }
 
         // displays a not cursed graphic for promotion
@@ -141,6 +142,9 @@ public class Sketch extends PApplet {
     @Override
     public void draw () {
         drawBoard();
+      //  if(chess.currentBoard().numActualMoves%2==1) {
+      //      chess.aiMove();
+      //  }
     }
 
     @Override
