@@ -55,6 +55,9 @@ public class Board {
         int start = m.getStartIdx();
         int end = m.getEndIdx();
 
+
+        // TODO : What is this
+        // Make it a bunch of things like: rookMoved[0] = (end==0) || (start==0)
         if(end==0) rookMoved[0]=true;
         else if(end==7) rookMoved[1]=true;
         else if(end==55) rookMoved[2]=true;
@@ -124,10 +127,17 @@ public class Board {
         System.out.println("white king in check: "+WKiC + " black king in check: "+BKiC);
         if (Math.abs(pieces[end]) > P) return;
         int p = pieces[end];
+        // If pawn is at the end, promote
         if ((p == 1 && row(end) == 0) || (p == -1 && row(end) == 7)) {
             promotingIdx = end;
         }
 
+        int delta = Math.abs(start - end);
+        // If en passant
+        if (delta == 7 || delta == 9) {
+            int color = pieces[end];
+            pieces[end + 8*color] = 0;
+        }
     }
 
     public int getPromotingIdx () { return promotingIdx; }
@@ -151,7 +161,6 @@ public class Board {
     }
 
     private void addPawnMoves (int idx) {
-        // TODO : Holy hell
         int color = (pieces[idx] > 0) ? 1 : -1;
         int dir = -color; // White moves up, black moves down
         int start;
@@ -186,11 +195,27 @@ public class Board {
             }
         }
 
+        // Starting move
         // If on the starting row for that color
         if ((row(idx) == 6 && color == 1) || (row(idx) == 1 && color == -1)) {
             int newIdx = idx - 16*color;
+            // If space is empty
             if (pieces[idx - 8*color] == 0 && pieces[newIdx] == 0)
                 possibleMoves.push(new Move(idx, newIdx, false, 0));
+        }
+
+        // En Passant
+        // If advanced to 5th rank
+        if ((row(idx) == 4 && color == -1) || (row(idx) == 3 && color == 1)) {
+            Move lastMove = pastMoves.peek();
+            // If the last move was a pawn move immediately next to this pawn
+            if (Math.abs(lastMove.getEndIdx() - idx) == 1 && Math.abs(pieces[lastMove.getEndIdx()]) == P) {
+                // If the last move was a 2 square pawn move
+                if (Math.abs(row(lastMove.getEndIdx()) - row(lastMove.getStartIdx())) == 2) {
+                    int capturingIdx = lastMove.getEndIdx();
+                    possibleMoves.push(new Move(idx, capturingIdx - 8*color, false, P));
+                }
+            }
         }
     }
 
@@ -334,7 +359,7 @@ public class Board {
                     case R -> addRookMoves(i);
                     case Q -> {
                         addBishopMoves(i);
-                        addRookMoves(i); // TODO : Prevent queen from castling
+                        addRookMoves(i);
                     }
                     case K -> addKingMoves(i);
                 }
