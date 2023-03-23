@@ -84,7 +84,7 @@ public class Sketch extends PApplet {
     private void drawBoard() {
         // TODO pick an actually good dark square color
         // BACKGROUND: (original dark square color: (40, 84, 50))
-        fill(60, 70, 82);
+        fill(1, 56, 17);
         noStroke();
         background(237, 226, 199);
         float squareWidth = width / 8f;
@@ -103,7 +103,7 @@ public class Sketch extends PApplet {
                 }
                 if (i * 8 + j == selectedSquare) {
                     pushStyle();
-                    fill(255, 234, 0, 100);
+                    fill(14, 125, 45, 255);
                     square(squareWidth * j, squareWidth * i, squareWidth);
                     popStyle();
                 }
@@ -115,7 +115,7 @@ public class Sketch extends PApplet {
                 }
                 if (possibleMoves.containsKey(i * 8 + j)) {
                     pushStyle();
-                    fill(40);
+                    fill(90);
                     circle(squareWidth * (j + 0.5f), squareWidth * (i + 0.5f), squareWidth / 2f);
                     popStyle();
                 }
