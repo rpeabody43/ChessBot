@@ -1,6 +1,3 @@
-import jdk.jshell.Diag;
-
-import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Stack;
 
@@ -150,15 +147,15 @@ public class Board {
         possibleMoves.clear();
 
         switch (Math.abs(pieces[end])) {
-            case P -> addPawnMoves(end);
-            case N -> addKnightMoves(end);
-            case B -> addBishopMoves(end);
-            case R -> addRookMoves(end);
+            case P -> getPawnMoves(end);
+            case N -> getKnightMoves(end);
+            case B -> getBishopMoves(end);
+            case R -> getRookMoves(end);
             case Q -> {
-                addBishopMoves(end);
-                addRookMoves(end);
+                getBishopMoves(end);
+                getRookMoves(end);
             }
-            case K -> addKingMoves(end);
+            case K -> getKingMoves(end);
         }
 
         for (Move move : possibleMoves) {
@@ -211,7 +208,9 @@ public class Board {
         return idx % 8;
     }
 
-    private void addPawnMoves(int idx) {
+    private LinkedList<Move> getPawnMoves(int idx) {
+        LinkedList<Move> ret = new LinkedList<>();
+
         int color = (pieces[idx] > 0) ? 1 : -1;
         int dir = -color; // White moves up, black moves down
         int start;
@@ -238,10 +237,10 @@ public class Board {
             int p = pieces[idx + change];
             if (change == 8 || change == -8) { // Straight up/down
                 if (p == 0)
-                    possibleMoves.push(new Move(idx, idx + change, 0));
+                    ret.add(new Move(idx, idx + change, 0));
             } else {
                 if (p * color < 0) // If different colors
-                    possibleMoves.push(new Move(idx, idx + change, p));
+                    ret.add(new Move(idx, idx + change, p));
             }
         }
 
@@ -251,7 +250,7 @@ public class Board {
             int newIdx = idx - 16 * color;
             // If space is empty
             if (pieces[idx - 8 * color] == 0 && pieces[newIdx] == 0)
-                possibleMoves.push(new Move(idx, newIdx, 0));
+                ret.add(new Move(idx, newIdx, 0));
         }
 
         // En Passant
@@ -263,13 +262,15 @@ public class Board {
                 // If the last move was a 2 square pawn move
                 if (Math.abs(row(lastMove.getEndIdx()) - row(lastMove.getStartIdx())) == 2) {
                     int capturingIdx = lastMove.getEndIdx();
-                    possibleMoves.push(new Move(idx, capturingIdx - 8 * color, P));
+                    ret.add(new Move(idx, capturingIdx - 8 * color, P));
                 }
             }
         }
+        return ret;
     }
 
-    private void addKnightMoves(int idx) {
+    private LinkedList<Move> getKnightMoves(int idx) {
+        LinkedList<Move> ret = new LinkedList<>();
 
         int[] idxChange = {-17, -15, -10, -6, 6, 10, 15, 17};
         int[] hozChange = {-1, 1, -2, 2, -2, 2, -1, 1};
@@ -282,13 +283,15 @@ public class Board {
                 if (idx + idxChange[i] > -1 && idx + idxChange[i] < pieces.length) {
                     if (hozChange[i] + column < 8 && hozChange[i] + column > -1)
                         if (pieces[idx + idxChange[i]] * pieces[idx] <= 0)
-                            possibleMoves.add(new Move(idx, idx + idxChange[i], pieces[idx + idxChange[i]]));
+                            ret.add(new Move(idx, idx + idxChange[i], pieces[idx + idxChange[i]]));
                 }
             }
         }
+        return ret;
     }
 
-    private void addBishopMoves(int idx) {
+    private LinkedList<Move> getBishopMoves(int idx) {
+        LinkedList<Move> ret = new LinkedList<>();
         int color = (pieces[idx] > 0) ? 1 : -1;
         int[] deltas = {9, -9, 7, -7};
 
@@ -319,34 +322,36 @@ public class Board {
                     // If blocked by different color, add a move where you capture, but no more
                     blocked = true;
                 }
-                possibleMoves.push(new Move(idx, idx + change, p)); // TODO : CHECKS
+                ret.add(new Move(idx, idx + change, p)); // TODO : CHECKS
             }
         }
+        return ret;
     }
 
-    private void addRookMoves(int idx) { //do a castle check
-        if (Math.abs(pieces[idx]) == Math.abs(R) || Math.abs(pieces[idx]) == Math.abs(Q)) {
+    private LinkedList<Move> getRookMoves(int idx) { //do a castle check
+        LinkedList<Move> ret = new LinkedList<>();
+        int row = row(idx);
+        int column = column(idx);
+        //this probably doesn't work but replit doesn't show red squiggly lines !!
+        int[] idxChange = {-1, -8, 1, 8};
+        int[] maxIterations = {column, row, 7 - column, 7 - row};
+        for (int i = 0; i < 4; i++) {
+            for (int j = 1; j <= maxIterations[i]; j++) {
+                if (pieces[idx + idxChange[i] * j] * pieces[idx] <= 0) {
+                    ret.add(new Move(idx, idx + idxChange[i] * j, pieces[idx + idxChange[i] * j]));
 
-            int row = row(idx);
-            int column = column(idx);
-            //this probably doesn't work but replit doesn't show red squiggly lines !!
-            int[] idxChange = {-1, -8, 1, 8};
-            int[] maxIterations = {column, row, 7 - column, 7 - row};
-            for (int i = 0; i < 4; i++) {
-                for (int j = 1; j <= maxIterations[i]; j++) {
-                    if (pieces[idx + idxChange[i] * j] * pieces[idx] <= 0) {
-                        possibleMoves.add(new Move(idx, idx + idxChange[i] * j, pieces[idx + idxChange[i] * j]));
-
-                        if (pieces[idx + idxChange[i] * j] * pieces[idx] < 0) break;
-                    } else {
-                        break;
-                    }
+                    if (pieces[idx + idxChange[i] * j] * pieces[idx] < 0) break;
+                } else {
+                    break;
                 }
             }
         }
+        return ret;
     }
 
-    private void addKingMoves(int idx) {
+    private LinkedList<Move> getKingMoves(int idx) {
+        LinkedList<Move> ret = new LinkedList<>();
+
         int color = (pieces[idx] > 0) ? 1 : -1;
         int[] idxChange = {-9, -8, -7, -1, 1, 7, 8, 9};
         int[] rizzChange = {-1, 0, 1, -1, 1, -1, 0, 1}; // hoRIZZontal change
@@ -358,7 +363,7 @@ public class Board {
                     if (rizzChange[i] + col < 8 && rizzChange[i] + col > -1) {
                         if (pieces[idx + idxChange[i]] * pieces[idx] <= 0) {
                             if (tileSafe(idx+idxChange[i], color))
-                                possibleMoves.add(new Move(idx, idx + idxChange[i], pieces[idx + idxChange[i]]));
+                                ret.add(new Move(idx, idx + idxChange[i], pieces[idx + idxChange[i]]));
                         }
                     }
                 }
@@ -366,20 +371,20 @@ public class Board {
             //castling
             if (pieces[idx] > 0 && kingMoved[1] == false) {
                 if (rookMoved[3] == false && pieces[61] == 0 && pieces[62] == 0)
-                    possibleMoves.add(new Move(60, 62, 0));
+                    ret.add(new Move(60, 62, 0));
                 if (rookMoved[2] == false && pieces[59] == 0 && pieces[58] == 0 && pieces[57] == 0)
-                    possibleMoves.add(new Move(60, 58, 0));
+                    ret.add(new Move(60, 58, 0));
 
             } else if (pieces[idx] < 0 && kingMoved[0] == false) {
                 if (rookMoved[1] == false && pieces[5] == 0 && pieces[6] == 0)
-                    possibleMoves.add(new Move(4, 6, 0));
+                    ret.add(new Move(4, 6, 0));
                 if (rookMoved[0] == false && pieces[1] == 0 && pieces[2] == 0 && pieces[3] == 0)
-                    possibleMoves.add(new Move(4, 2, 0));
+                    ret.add(new Move(4, 2, 0));
 
 
             }
         }
-
+        return ret;
     }
 
     public LinkedList<Move> getPossibleMoves() {
@@ -397,17 +402,17 @@ public class Board {
             int piece = pieces[i];
             int whichColor = numActualMoves % 2 == 0 ? 1 : -1;
             if (piece * whichColor > 0) {
-                switch (Math.abs(piece)) {
-                    case P -> addPawnMoves(i);
-                    case N -> addKnightMoves(i);
-                    case B -> addBishopMoves(i);
-                    case R -> addRookMoves(i);
-                    case Q -> {
-                        addBishopMoves(i);
-                        addRookMoves(i);
-                    }
-                    case K -> addKingMoves(i);
-                }
+                LinkedList<Move> movesAtIdx =  switch (Math.abs(piece)) {
+                    case P -> getPawnMoves(i);
+                    case N -> getKnightMoves(i);
+                    case B, Q -> getBishopMoves(i); // We add rook moves after
+                    case R -> getRookMoves(i);
+                    case K -> getKingMoves(i);
+                    default -> new LinkedList<>();
+                };
+                if (Math.abs(piece) == Q) movesAtIdx.addAll(getRookMoves(i));
+
+                possibleMoves.addAll(movesAtIdx);
             }
         }
 
