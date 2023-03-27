@@ -102,6 +102,7 @@ public class Board {
         int start = m.getStartIdx();
         int end = m.getEndIdx();
 
+        int endPiece = pieces[end];
 
         // TODO : What is this
         // Make it a bunch of things like: rookMoved[0] = (end==0) || (start==0)
@@ -141,7 +142,6 @@ public class Board {
         else if (pieces[end] == -K) blackKing = end;
         pieces[start] = 0;
 
-        numActualMoves++;
 
         pastMoves.push(m);
         possibleMoves.clear();
@@ -156,8 +156,11 @@ public class Board {
         }
         possibleMoves.clear();
         System.out.println("white king in check: " + whiteInCheck + " black king in check: " + blackInCheck);
-        if (Math.abs(pieces[end]) > P) return;
+
+        numActualMoves++;
+
         int p = pieces[end];
+        if (Math.abs(p) > P) return;
         // If pawn is at the end, promote
         if ((p == 1 && row(end) == 0) || (p == -1 && row(end) == 7)) {
             promotingIdx = end;
@@ -165,10 +168,11 @@ public class Board {
 
         int delta = Math.abs(start - end);
         // If en passant
-        if (p == 1 && (delta == 7 || delta == 9) && pieces[end] == 0) {
+        if ((delta == 7 || delta == 9) && endPiece == 0) {
             int color = pieces[end];
             pieces[end + 8 * color] = 0;
         }
+
     }
 
     public int getPromotingIdx() {
