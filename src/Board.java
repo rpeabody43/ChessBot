@@ -146,28 +146,13 @@ public class Board {
         pastMoves.push(m);
         possibleMoves.clear();
 
-        switch (Math.abs(pieces[end])) {
-            case P -> getPawnMoves(end);
-            case N -> getKnightMoves(end);
-            case B -> getBishopMoves(end);
-            case R -> getRookMoves(end);
-            case Q -> {
-                getBishopMoves(end);
-                getRookMoves(end);
-            }
-            case K -> getKingMoves(end);
-        }
 
-        for (Move move : possibleMoves) {
-            if (numActualMoves % 2 == 0) {
-                if (pieces[move.getEndIdx()] == K)
-                    whiteInCheck = true;
-            } else {
-                if (pieces[move.getEndIdx()] == -K)
-                    blackInCheck = true;
-            }
-
-
+        if (numActualMoves % 2 == 0) {
+            if (!tileSafe(whiteKing, 1))
+                whiteInCheck = true;
+        } else {
+            if (!tileSafe(blackKing, -1))
+                blackInCheck = true;
         }
         possibleMoves.clear();
         System.out.println("white king in check: " + whiteInCheck + " black king in check: " + blackInCheck);
