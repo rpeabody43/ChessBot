@@ -39,14 +39,16 @@ public class Board {
         rookMoved = new boolean[]{false, false, false, false};
         pieces = new int[]{
                 -R, -N, -B, -Q, -K, -B, -N, -R, // Black Pieces
-                -P, -P, -P, -P, -P, -P, -P, -P, // Black Pawns
+              //  -P, -P, -P, -P, -P, -P, -P, -P, // Black Pawns
 
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
 
-                P, P, P, P, P, P, P, P, // White Pawns
+            //    P, P, P, P, P, P, P, P, // White Pawns
                 R, N, B, Q, K, B, N, R // White Pieces
         };
 
@@ -365,16 +367,27 @@ public class Board {
             }
             //castling
             if (pieces[idx] > 0 && kingMoved[1] == false) {
-                if (rookMoved[3] == false && pieces[61] == 0 && pieces[62] == 0)
-                    possibleMoves.add(new Move(60, 62, 0));
-                if (rookMoved[2] == false && pieces[59] == 0 && pieces[58] == 0 && pieces[57] == 0)
-                    possibleMoves.add(new Move(60, 58, 0));
+                if (rookMoved[3] == false && pieces[61] == 0 && pieces[62] == 0){
+                    if(tileSafe(60,1) && tileSafe(61,1) && tileSafe(62,1))
+                        possibleMoves.add(new Move(60, 62, 0));
+                }
+
+
+                if (rookMoved[2] == false && pieces[59] == 0 && pieces[58] == 0 && pieces[57] == 0){
+                    if(tileSafe(60,1) && tileSafe(59,1) && tileSafe(58,1))
+                        possibleMoves.add(new Move(60, 58, 0));
+                }
+
 
             } else if (pieces[idx] < 0 && kingMoved[0] == false) {
-                if (rookMoved[1] == false && pieces[5] == 0 && pieces[6] == 0)
-                    possibleMoves.add(new Move(4, 6, 0));
-                if (rookMoved[0] == false && pieces[1] == 0 && pieces[2] == 0 && pieces[3] == 0)
-                    possibleMoves.add(new Move(4, 2, 0));
+                if (rookMoved[1] == false && pieces[5] == 0 && pieces[6] == 0){
+                    if(tileSafe(4,-1) && tileSafe(5,-1) && tileSafe(6,-1))
+                        possibleMoves.add(new Move(4, 6, 0));
+                }
+                if (rookMoved[0] == false && pieces[1] == 0 && pieces[2] == 0 && pieces[3] == 0){
+                    if(tileSafe(2,-1) && tileSafe(3,-1) && tileSafe(4,-1))
+                        possibleMoves.add(new Move(4, 2, 0));
+                }
 
 
             }
