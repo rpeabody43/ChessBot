@@ -350,6 +350,7 @@ public class Board {
         // Bishop pin checker
         for(int i =0; i<4;i++){
             int pinnedIdx =-1;
+            boolean foundOpp = false;
             for(int dTile: DiagIterator.iter(kingLoc,i)){
                 if(pieces[dTile]*color > 0){
                     if(pinnedIdx!=-1){
@@ -359,16 +360,18 @@ public class Board {
                     pinnedIdx = dTile;
                 }
                 else if(pieces[dTile]*color < 0){
+                    foundOpp=true;
                     if(Math.abs(pieces[dTile])!= B && Math.abs(pieces[dTile])!= Q){
                         pinnedIdx=-1;
                     }
                     break;
                 }
             }
-            if(pinnedIdx != -1)
+            if(pinnedIdx != -1 && foundOpp)
                 r.add(pinnedIdx);
             // Rook pin checker
             pinnedIdx =-1;
+            foundOpp=false;
             for(int sTile: StraightIterator.iter(kingLoc,i)){
                 if(pieces[sTile]*color > 0){
                     if(pinnedIdx!=-1){
@@ -378,13 +381,14 @@ public class Board {
                     pinnedIdx = sTile;
                 }
                 else if(pieces[sTile]*color < 0){
+                    foundOpp=true;
                     if(Math.abs(pieces[sTile])!= R && Math.abs(pieces[sTile])!= Q){
                         pinnedIdx=-1;
                     }
                     break;
                 }
             }
-            if(pinnedIdx != -1)
+            if(pinnedIdx != -1 && foundOpp=true)
                 r.add(pinnedIdx);
         }
 
