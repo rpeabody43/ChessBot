@@ -1,3 +1,4 @@
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Stack;
 
@@ -19,6 +20,8 @@ public class Board {
     boolean[] kingMoved;
 
     int promotingIdx;
+
+    HashSet<Integer> pinnedPieces;
 
     public boolean blackInCheck;
     private int blackKing;
@@ -42,8 +45,7 @@ public class Board {
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
+
 
                 P, P, P, P, P, P, P, P, // White Pawns
                 R, N, B, Q, K, B, N, R // White Pieces
@@ -54,6 +56,8 @@ public class Board {
 
         pastMoves = new Stack<>();
         promotingIdx = -1;
+
+        pinnedPieces = new HashSet<Integer>();
     }
 
     private boolean tileAttackedByPiece(int color, int piece, Iterable<Integer> iter) {
@@ -340,6 +344,54 @@ public class Board {
         return ret;
     }
 
+    private HashSet<Integer> getPinnedPieces(int color){
+        HashSet<Integer> r = new HashSet<Integer>();
+        int kingLoc = color==-1?blackKing:whiteKing;
+        // Bishop pin checker
+        for(int i =0; i<4;i++){
+            int pinnedIdx =-1;
+            for(int dTile: DiagIterator.iter(kingLoc,i)){
+                if(pieces[dTile]*color > 0){
+                    if(pinnedIdx!=-1){
+                        pinnedIdx=-1;
+                        break;
+                    }
+                    pinnedIdx = dTile;
+                }
+                else if(pieces[dTile]*color < 0){
+                    if(Math.abs(pieces[dTile])!= B && Math.abs(pieces[dTile])!= Q){
+                        pinnedIdx=-1;
+                    }
+                    break;
+                }
+            }
+            if(pinnedIdx != -1)
+                r.add(pinnedIdx);
+            // Rook pin checker
+            pinnedIdx =-1;
+            for(int sTile: StraightIterator.iter(kingLoc,i)){
+                if(pieces[sTile]*color > 0){
+                    if(pinnedIdx!=-1){
+                        pinnedIdx=-1;
+                        break;
+                    }
+                    pinnedIdx = sTile;
+                }
+                else if(pieces[sTile]*color < 0){
+                    if(Math.abs(pieces[sTile])!= R && Math.abs(pieces[sTile])!= Q){
+                        pinnedIdx=-1;
+                    }
+                    break;
+                }
+            }
+            if(pinnedIdx != -1)
+                r.add(pinnedIdx);
+        }
+
+        return r;
+    }
+
+
     private LinkedList<Move> getKingMoves(int idx) {
         LinkedList<Move> ret = new LinkedList<>();
 
@@ -398,7 +450,12 @@ public class Board {
 
     private void updatePossibleMoves() {
         possibleMoves = new LinkedList<>();
+
+        HashSet<Integer> temp = getPinnedPieces(numActualMoves%2==0?1:-1);
+        System.out.println(numActualMoves);
+        System.out.println(temp);
         for (int i = 0; i < pieces.length; i++) {
+            if(temp.contains(i)) continue;
             int piece = pieces[i];
             int whichColor = numActualMoves % 2 == 0 ? 1 : -1;
             if (piece * whichColor > 0) {
