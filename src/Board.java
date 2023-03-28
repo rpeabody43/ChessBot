@@ -388,7 +388,7 @@ public class Board {
                     break;
                 }
             }
-            if(pinnedIdx != -1 && foundOpp=true)
+            if(pinnedIdx != -1 && foundOpp==true)
                 r.add(pinnedIdx);
         }
 
