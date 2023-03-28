@@ -36,7 +36,7 @@ public class Board {
         rookMoved = new boolean[]{false, false, false, false};
         pieces = new int[]{
                 -R, -N, -B, -Q, -K, -B, -N, -R, // Black Pieces
-              //  -P, -P, -P, -P, -P, -P, -P, -P, // Black Pawns
+                -P, -P, -P, -P, -P, -P, -P, -P, // Black Pawns
 
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
@@ -45,7 +45,7 @@ public class Board {
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
 
-            //    P, P, P, P, P, P, P, P, // White Pawns
+                P, P, P, P, P, P, P, P, // White Pawns
                 R, N, B, Q, K, B, N, R // White Pieces
         };
 
@@ -56,7 +56,7 @@ public class Board {
         promotingIdx = -1;
     }
 
-    private boolean tileAttackedByPiece(int idx, int color, int piece, Iterable<Integer> iter) {
+    private boolean tileAttackedByPiece(int color, int piece, Iterable<Integer> iter) {
         for (int newIdx : iter) {
             int p = pieces[newIdx];
             if (p == 0) continue;
@@ -74,14 +74,14 @@ public class Board {
 
         for (int i = 0; i < 4; i++) {
             // BISHOP MOVES
-            if (tileAttackedByPiece(idx, B, color, DiagIterator.iter(idx, i)))
+            if (tileAttackedByPiece(B, color, DiagIterator.iter(idx, i)))
                 return false;
             // ROOK MOVES
-            if (tileAttackedByPiece(idx, R, color, StraightIterator.iter(idx, i)))
+            if (tileAttackedByPiece(R, color, StraightIterator.iter(idx, i)))
                 return false;
         }
         // KNIGHT MOVES
-        if (tileAttackedByPiece(idx, K, color, KnightIterator.iter(idx)))
+        if (tileAttackedByPiece(K, color, KnightIterator.iter(idx)))
             return false;
 
         // PAWN MOVES
