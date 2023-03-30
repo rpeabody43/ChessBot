@@ -42,8 +42,6 @@ public class Board {
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
 
                 P, P, P, P, P, P, P, P, // White Pawns
                 R, N, B, Q, K, B, N, R // White Pieces
@@ -54,6 +52,8 @@ public class Board {
 
         pastMoves = new Stack<>();
         promotingIdx = -1;
+
+        updatePossibleMoves();
     }
 
     private boolean tileAttackedByPiece(int color, int piece, Iterable<Integer> iter) {
@@ -61,11 +61,9 @@ public class Board {
             int p = pieces[newIdx];
             if (p == 0) continue;
 
-            // If opposite color bishop and is on a diagonal
-            boolean checkQueen = false;
-            if (Math.abs(piece) == B || Math.abs(piece) == R)
-                checkQueen = true;
-            return p == -color * piece || (checkQueen && p == -color*Q);
+            // queen is essentially a bishop and rook
+            boolean queenMove = Math.abs(piece) == B || Math.abs(piece) == R;
+            return p == -color * piece || (queenMove && p == -color*Q);
         }
         return false;
     }
@@ -74,14 +72,14 @@ public class Board {
 
         for (int i = 0; i < 4; i++) {
             // BISHOP MOVES
-            if (tileAttackedByPiece(B, color, DiagIterator.iter(idx, i)))
+            if (tileAttackedByPiece(color, B, DiagIterator.iter(idx, i)))
                 return false;
             // ROOK MOVES
-            if (tileAttackedByPiece(R, color, StraightIterator.iter(idx, i)))
+            if (tileAttackedByPiece(color, R, StraightIterator.iter(idx, i)))
                 return false;
         }
         // KNIGHT MOVES
-        if (tileAttackedByPiece(K, color, KnightIterator.iter(idx)))
+        if (tileAttackedByPiece(color, K, KnightIterator.iter(idx)))
             return false;
 
         // PAWN MOVES
@@ -175,6 +173,7 @@ public class Board {
             pieces[end + 8 * color] = 0;
         }
 
+        updatePossibleMoves();
     }
 
     public int getPromotingIdx() {
@@ -388,7 +387,6 @@ public class Board {
     }
 
     public LinkedList<Move> getPossibleMoves() {
-        updatePossibleMoves();
         return possibleMoves;
     }
 
