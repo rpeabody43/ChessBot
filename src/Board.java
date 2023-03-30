@@ -45,10 +45,6 @@ public class Board {
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
-<<<<<<< HEAD
-=======
-
->>>>>>> 28ce3bfbfb0a48c4241584f2d8c74d976ee529d2
 
                 P, P, P, P, P, P, P, P, // White Pawns
                 R, N, B, Q, K, B, N, R // White Pieces
