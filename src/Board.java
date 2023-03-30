@@ -146,10 +146,9 @@ public class Board {
         else if (pieces[end] == -K) blackKing = end;
         pieces[start] = 0;
 
-
         pastMoves.push(m);
         possibleMoves.clear();
-
+        numActualMoves++;
 
         if (numActualMoves % 2 == 0) {
             if (!tileSafe(whiteKing, 1))
@@ -158,12 +157,12 @@ public class Board {
             if (!tileSafe(blackKing, -1))
                 blackInCheck = true;
         }
-        possibleMoves.clear();
         System.out.println("white king in check: " + whiteInCheck + " black king in check: " + blackInCheck);
 
-        numActualMoves++;
 
         int p = pieces[end];
+        updatePossibleMoves();
+
         if (Math.abs(p) > P) return;
         // If pawn is at the end, promote
         if ((p == 1 && row(end) == 0) || (p == -1 && row(end) == 7)) {
@@ -177,7 +176,6 @@ public class Board {
             pieces[end + 8 * color] = 0;
         }
 
-        updatePossibleMoves();
     }
 
     public int getPromotingIdx() {
