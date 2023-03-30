@@ -1,3 +1,5 @@
+import java.awt.image.AreaAveragingScaleFilter;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Stack;
@@ -60,31 +62,40 @@ public class Board {
         pinnedPieces = new HashSet<>();
     }
 
-    private boolean tileAttackedByPiece(int color, int piece, Iterable<Integer> iter) {
+    private int tileAttackedByPiece(int color, int piece, Iterable<Integer> iter) {
         for (int newIdx : iter) {
             int p = pieces[newIdx];
             if (p == 0) continue;
 
             // queen is essentially a bishop and rook
             boolean queenMove = Math.abs(piece) == B || Math.abs(piece) == R;
-            return p == -color * piece || (queenMove && p == -color*Q);
+            boolean attacked = p == -color * piece || (queenMove && p == -color*Q);
+            if (attacked) return newIdx;
         }
-        return false;
+        return 0;
     }
 
-    private boolean tileSafe(int idx, int color) {
+    private ArrayList<Integer> piecesAttackingTile (int idx, int color) {
+        ArrayList<Integer> attackingPieces = new ArrayList<>();
 
         for (int i = 0; i < 4; i++) {
             // BISHOP MOVES
-            if (tileAttackedByPiece(color, B, DiagIterator.iter(idx, i)))
-                return false;
+            int bishopMove = tileAttackedByPiece(color, B, DiagIterator.iter(idx, i));
+            if (bishopMove > 0) {
+                attackingPieces.add(bishopMove);
+            }
+
             // ROOK MOVES
-            if (tileAttackedByPiece(color, R, StraightIterator.iter(idx, i)))
-                return false;
+            int rookMove = tileAttackedByPiece(color, R, StraightIterator.iter(idx, i));
+            if (rookMove > 0) {
+                attackingPieces.add(rookMove);
+            }
         }
         // KNIGHT MOVES
-        if (tileAttackedByPiece(color, K, KnightIterator.iter(idx)))
-            return false;
+        int knightMove = tileAttackedByPiece(color, K, KnightIterator.iter(idx));
+        if (knightMove > 0) {
+            attackingPieces.add(knightMove);
+        }
 
         // PAWN MOVES
         int[] pawnDeltas = {9, 7}; // Handle up/down on color
@@ -93,12 +104,15 @@ public class Board {
             if (newIdx >= pieces.length || newIdx < 0) continue;
             int newCol = column(newIdx);
             if (Math.abs(newCol - column(idx)) == 7) continue;
-            if (pieces[newIdx] == -color * P) return false;
+            if (pieces[newIdx] == -color * P) attackingPieces.add(newIdx);
         }
 
-        return true;
+        return attackingPieces;
     }
 
+    private boolean tileSafe(int idx, int color) {
+        return piecesAttackingTile(idx, color).size() == 0;
+    }
 
     // For AI player / Internally
     // Board is 1D
