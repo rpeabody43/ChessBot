@@ -360,7 +360,7 @@ public class Board {
         int col = column(idx);
 
 
-        int color = numActualMoves%2==0?1:-1;
+        int color = pieces[idx]>0?1:-1;
         int kingIdx = color==-1?blackKing:whiteKing;
 
         int krow = row(kingIdx);
@@ -382,12 +382,12 @@ public class Board {
             }
 
         }
-        else if(((kingIdx -idx) % 9==0 || (kingIdx -idx) % 9==7) && (Math.abs(pieces[idx]) ==B || Math.abs(pieces[idx]) ==Q)){
+        else if(((kingIdx -idx) % 9==0 || (kingIdx -idx) % 7==0) && (Math.abs(pieces[idx]) ==B || Math.abs(pieces[idx]) ==Q)){
             int[] dirs = {0,0};
             if((kingIdx -idx) % 9==0 )
-                dirs = new int[]{0,2};
+                dirs = new int[]{0,3};
             else
-                dirs = new int[]{1,3};
+                dirs = new int[]{1,2};
             for(int dir: dirs) {
                 for (int tile : DiagIterator.iter(idx, dir)) {
                     if (pieces[tile] * color > 0) break;
@@ -519,6 +519,7 @@ public class Board {
         for (int i = 0; i < pieces.length; i++) {
             if(temp.contains(i)){
                 possibleMoves.addAll(addPinnedPieceMoves(i));
+                System.out.println(addPinnedPieceMoves((i)));
                 continue;
             }
             int piece = pieces[i];
