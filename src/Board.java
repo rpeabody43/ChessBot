@@ -368,11 +368,9 @@ public class Board {
 
         LinkedList<Move> res = new LinkedList<>();
         if((col == kcol || row == krow) && (Math.abs(pieces[idx]) ==R || Math.abs(pieces[idx]) ==Q)) { // vertical
-            int[] dirs = {0,0};
+            int[] dirs = {0,2};
             if(col == kcol)
                 dirs = new int[]{1,3};
-            else
-                dirs = new int[]{0,2};
             for(int dir: dirs) {
                 for (int tile : StraightIterator.iter(idx, dir)) {
                     if (pieces[tile] * color > 0) break;
@@ -383,11 +381,9 @@ public class Board {
 
         }
         else if(((kingIdx -idx) % 9==0 || (kingIdx -idx) % 7==0) && (Math.abs(pieces[idx]) ==B || Math.abs(pieces[idx]) ==Q)){
-            int[] dirs = {0,0};
+            int[] dirs = {1,2};
             if((kingIdx -idx) % 9==0 )
                 dirs = new int[]{0,3};
-            else
-                dirs = new int[]{1,2};
             for(int dir: dirs) {
                 for (int tile : DiagIterator.iter(idx, dir)) {
                     if (pieces[tile] * color > 0) break;
