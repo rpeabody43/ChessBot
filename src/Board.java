@@ -1,4 +1,3 @@
-import java.awt.image.AreaAveragingScaleFilter;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedList;
@@ -113,6 +112,10 @@ public class Board {
     private boolean tileSafe(int idx, int color) {
         return piecesAttackingTile(idx, color).size() == 0;
     }
+
+//    private boolean blocksCheck (int idx) {
+//
+//    }
 
     // For AI player / Internally
     // Board is 1D
