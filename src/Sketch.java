@@ -82,9 +82,8 @@ public class Sketch extends PApplet {
     }
 
     private void drawBoard() {
-        // TODO pick an actually good dark square color
-        // BACKGROUND: (original dark square color: (40, 84, 50))
-        fill(1, 56, 17);
+        // BACKGROUND
+        fill(105, 59, 73);
         noStroke();
         background(237, 226, 199);
         float squareWidth = width / 8f;
