@@ -55,6 +55,11 @@ public class Sketch extends PApplet {
             };
             whitePieces[i - 1] = loadImage("sprites/ChessPiecesv2/White/white" + piece + "_v2.png");
             blackPieces[i - 1] = loadImage("sprites/ChessPiecesv2/Black/black" + piece + "_v2.png");
+            float r = random(0, 1);
+            if(r >= 0.99167){
+                whitePieces[i - 1] = loadImage("sprites/ChessPiecesv1/White/white" + piece + "_v1.png");
+                blackPieces[i - 1] = loadImage("sprites/ChessPiecesv1/Black/black" + piece + "_v1.png");
+            }
         }
 
     }
