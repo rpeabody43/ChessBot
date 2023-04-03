@@ -358,6 +358,50 @@ public class Board {
         return ret;
     }
 
+    private LinkedList<Move> addPinnedPieceMoves(int idx){
+        int row = row(idx);
+        int col = column(idx);
+
+
+        int color = pieces[idx]>0?1:-1;
+        int kingIdx = color==-1?blackKing:whiteKing;
+
+        int krow = row(kingIdx);
+        int kcol = column(kingIdx);
+
+        LinkedList<Move> res = new LinkedList<>();
+        if((col == kcol || row == krow) && (Math.abs(pieces[idx]) ==R || Math.abs(pieces[idx]) ==Q)) { // vertical
+            int[] dirs = {0,2};
+            if(col == kcol)
+                dirs = new int[]{1,3};
+            for(int dir: dirs) {
+                for (int tile : StraightIterator.iter(idx, dir)) {
+                    if (pieces[tile] * color > 0) break;
+                    res.add(new Move(idx, tile, pieces[tile]));
+                    if (pieces[tile] * color < 0) break;
+                }
+            }
+
+        }
+        else if(((kingIdx -idx) % 9==0 || (kingIdx -idx) % 7==0) && (Math.abs(pieces[idx]) ==B || Math.abs(pieces[idx]) ==Q)){
+            int[] dirs = {1,2};
+            if((kingIdx -idx) % 9==0 )
+                dirs = new int[]{0,3};
+            for(int dir: dirs) {
+                for (int tile : DiagIterator.iter(idx, dir)) {
+                    if (pieces[tile] * color > 0) break;
+                    res.add(new Move(idx, tile, pieces[tile]));
+                    if (pieces[tile] * color < 0) break;
+                }
+            }
+
+        }
+
+        return res;
+    }
+
+
+
     private HashSet<Integer> getPinnedPieces(int color){
         HashSet<Integer> r = new HashSet<Integer>();
         int kingLoc = color==-1?blackKing:whiteKing;
@@ -472,7 +516,11 @@ public class Board {
         System.out.println(numActualMoves);
         System.out.println(temp);
         for (int i = 0; i < pieces.length; i++) {
-            if(temp.contains(i)) continue;
+            if(temp.contains(i)){
+                possibleMoves.addAll(addPinnedPieceMoves(i));
+                System.out.println(addPinnedPieceMoves((i)));
+                continue;
+            }
             int piece = pieces[i];
             int whichColor = numActualMoves % 2 == 0 ? 1 : -1;
             if (piece * whichColor > 0) {
