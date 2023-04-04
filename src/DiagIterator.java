@@ -3,6 +3,10 @@ import java.util.Iterator;
 class DiagIterator implements Iterable<Integer> {
     private int startIdx;
     private int direction;
+    // 0 - UP LEFT
+    // 1 - UP RIGHT
+    // 2 - DOWN LEFT
+    // 3 - DOWN RIGHT
 
     public DiagIterator(int startIdx, int direction) {
         this.startIdx = startIdx;
