@@ -3,6 +3,10 @@ import java.util.Iterator;
 class StraightIterator implements Iterable<Integer> {
     int startIdx;
     int direction;
+    // 0 - LEFT
+    // 1 - UP
+    // 2 - RIGHT
+    // 3 - DOWN
 
     public StraightIterator(int startIdx, int direction) {
         this.startIdx = startIdx;

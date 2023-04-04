@@ -55,6 +55,11 @@ public class Sketch extends PApplet {
             };
             whitePieces[i - 1] = loadImage("sprites/ChessPiecesv2/White/white" + piece + "_v2.png");
             blackPieces[i - 1] = loadImage("sprites/ChessPiecesv2/Black/black" + piece + "_v2.png");
+            float r = random(0, 1);
+            if(r >= 0.98333){
+                whitePieces[i - 1] = loadImage("sprites/ChessPiecesv1/White/white" + piece + "_v1.png");
+                blackPieces[i - 1] = loadImage("sprites/ChessPiecesv1/Black/black" + piece + "_v1.png");
+            }
         }
 
     }
@@ -82,9 +87,8 @@ public class Sketch extends PApplet {
     }
 
     private void drawBoard() {
-        // TODO pick an actually good dark square color
-        // BACKGROUND: (original dark square color: (40, 84, 50))
-        fill(1, 56, 17);
+        // BACKGROUND
+        fill(105, 59, 73);
         noStroke();
         background(237, 226, 199);
         float squareWidth = width / 8f;
