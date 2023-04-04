@@ -1,8 +1,5 @@
 import java.awt.image.AreaAveragingScaleFilter;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Stack;
+import java.util.*;
 
 public class Board {
 
@@ -397,19 +394,45 @@ public class Board {
             }
 
         }
+        else if(Math.abs(pieces[idx])==P){
+            if((col == kcol || row == krow)){ //if pawn pinned by rook
+                int moveTo = idx+(color==-1?8:-8);
+                if(pieces[moveTo]==0)
+                    res.add(new Move(idx,moveTo,pieces[moveTo]));
+            }else{ //pawn pinned by bishop
+                int dir;
+                if((kingIdx -idx) % 9==0 )
+                    dir = color==-1?9:-9;
+                else
+                    dir = color==-1?7:-7;
+                if(pieces[idx+dir]*color<0) {
+                    //this theoretically should only be true when pinned by bishop which pawn can take
+                    if(pieces[idx+dir]*color<0)
+                        res.add(new Move(idx,idx+dir,pieces[idx+dir]));
+                }else{
+                    //this means bishop is pinning on a longer diag, only possible move the pawn theoretically can make here is enpassant
+                    //warning my logic might be wrong
+                    Move lastMove = pastMoves.peek();
+                    int endPos = idx+(dir==-9||dir==7?-1:1);
+                    if(Math.abs(pieces[lastMove.getEndIdx()])==P && Math.abs(lastMove.getEndIdx()- lastMove.getStartIdx())==16 && lastMove.getEndIdx()==endPos){
+                        res.add(new Move(idx,endPos,pieces[endPos]));
+                    }
+                }
+            }
+        }
 
         return res;
     }
 
 
 
-    private HashSet<Integer> getPinnedPieces(int color){
-        HashSet<Integer> r = new HashSet<Integer>();
+    private HashMap<Integer,Integer> getPinnedPieces(int color){
+        HashMap<Integer,Integer> r = new HashMap<>();
         int kingLoc = color==-1?blackKing:whiteKing;
         // Bishop pin checker
         for(int i =0; i<4;i++){
             int pinnedIdx =-1;
-            boolean foundOpp = false;
+            int pinningPiece=-1;
             for(int dTile: DiagIterator.iter(kingLoc,i)){
                 if(pieces[dTile]*color > 0){
                     if(pinnedIdx!=-1){
@@ -419,18 +442,18 @@ public class Board {
                     pinnedIdx = dTile;
                 }
                 else if(pieces[dTile]*color < 0){
-                    foundOpp=true;
+                    pinningPiece=dTile;
                     if(Math.abs(pieces[dTile])!= B && Math.abs(pieces[dTile])!= Q){
                         pinnedIdx=-1;
                     }
                     break;
                 }
             }
-            if(pinnedIdx != -1 && foundOpp)
-                r.add(pinnedIdx);
+            if(pinnedIdx != -1 && pinningPiece!=-1)
+                r.put(pinnedIdx,pinningPiece);
             // Rook pin checker
             pinnedIdx =-1;
-            foundOpp=false;
+            pinningPiece=-1;
             for(int sTile: StraightIterator.iter(kingLoc,i)){
                 if(pieces[sTile]*color > 0){
                     if(pinnedIdx!=-1){
@@ -440,15 +463,15 @@ public class Board {
                     pinnedIdx = sTile;
                 }
                 else if(pieces[sTile]*color < 0){
-                    foundOpp=true;
+                    pinningPiece=sTile;
                     if(Math.abs(pieces[sTile])!= R && Math.abs(pieces[sTile])!= Q){
                         pinnedIdx=-1;
                     }
                     break;
                 }
             }
-            if(pinnedIdx != -1 && foundOpp==true)
-                r.add(pinnedIdx);
+            if(pinnedIdx != -1 && pinningPiece!=-1)
+                r.put(pinnedIdx,pinningPiece);
         }
 
         return r;
@@ -513,11 +536,11 @@ public class Board {
     private void updatePossibleMoves() {
         possibleMoves = new LinkedList<>();
 
-        HashSet<Integer> temp = getPinnedPieces(numActualMoves%2==0?1:-1);
+        HashMap<Integer,Integer> pinnedPieces = getPinnedPieces(numActualMoves%2==0?1:-1);
         System.out.println(numActualMoves);
-        System.out.println(temp);
+        System.out.println(pinnedPieces);
         for (int i = 0; i < pieces.length; i++) {
-            if(temp.contains(i)){
+            if(pinnedPieces.containsKey(i)){
                 possibleMoves.addAll(addPinnedPieceMoves(i));
                 System.out.println(addPinnedPieceMoves((i)));
                 continue;
@@ -548,4 +571,33 @@ public class Board {
         // il vaticano
 
     }
+    public void undoMove(){
+        Move lastMove = pastMoves.pop();
+        pieces[lastMove.getStartIdx()] = lastMove.getEndIdx();
+        pieces[lastMove.getEndIdx()]=lastMove.getCapturedPiece();
+        updatePossibleMoves();
+        //potentially other things
+    }
+
+    public int evaluate(){
+        int eval = 0;
+        for(int i =0; i< pieces.length; i++) {
+            int color = pieces[i]>0?1:pieces[i]<0?-1:0;
+            int materialVal = switch(Math.abs(pieces[i])){
+                case P -> 100;
+                case N -> 300;
+                case B -> 300;
+                case Q -> 900;
+                case R -> 500;
+                case K -> 1000000;
+                default -> 0;
+            };
+            // positional code
+            int positionalVal = 0;
+            eval+=color*(materialVal+positionalVal);
+        }
+        return eval;
+    }
+
+
 }
