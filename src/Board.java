@@ -114,8 +114,6 @@ public class Board {
 
     private boolean tileSafe(int idx, int color) {
         ArrayList<Integer> attackingPieces = piecesAttackingTile(idx, color);
-        if (idx == blackKing+7)
-            System.out.println(idx + ": " + attackingPieces);
         return attackingPieces.size() == 0;
     }
 
