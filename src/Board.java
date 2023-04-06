@@ -1,5 +1,3 @@
-<<<<<<< HEAD
-import java.awt.image.AreaAveragingScaleFilter;
 import java.util.*;
 import java.util.ArrayList;
 import java.util.HashSet;
