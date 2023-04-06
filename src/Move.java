@@ -21,4 +21,18 @@ public class Move {
     public int getEndIdx () {
         return end;
     }
+
+    @Override
+    public boolean equals (Object obj) {
+        if (obj == null || obj.getClass() != this.getClass()) {
+            return false;
+        }
+
+        Move other = (Move) obj;
+        if (other.start != this.start) return false;
+        if (other.end != this.end) return false;
+        if (other.capturedPiece != this.capturedPiece) return false;
+
+        return true;
+    }
 }

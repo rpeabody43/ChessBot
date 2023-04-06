@@ -13,6 +13,26 @@ public class Board {
     public static final int Q = 5; // QUEEN
     public static final int K = 6; // KING
 
+    public static final int PLAYING = 0;
+    // Maybe add draw types? (stalemate, insufficient material, etc.)
+    public static final int DRAW = 1;
+    public static final int WHITEWINS = 2;
+    public static final int BLACKWINS = 3;
+
+    private int gameState;
+    private int movesWithoutCap; // 50 moves without captures = draw
+    private int whitePieceValue;
+    private int whitePieceCount;
+    private int blackPieceValue;
+    private int blackPieceCount;
+
+
+    private int repeatedWhiteMoves;
+    private int repeatedBlackMoves;
+    private Move lastWhiteMove;
+    private Move lastBlackMove;
+
+
     private LinkedList<Move> possibleMoves;
     private Stack<Move> pastMoves;
 
@@ -61,6 +81,13 @@ public class Board {
 
         updatePossibleMoves();
         pinnedPieces = new HashSet<>();
+
+        whitePieceValue = 8*P + 2*N + 2*B + 2*R + Q + K;
+        whitePieceCount = 16;
+        blackPieceValue = 8*P + 2*N + 2*B + 2*R + Q + K;
+        blackPieceCount = 16;
+
+        gameState = PLAYING;
     }
 
     private int tileAttackedByPiece(int color, int piece, Iterable<Integer> iter) {
@@ -162,8 +189,14 @@ public class Board {
         return ret;
     }
 
-    // For AI player / Internally
-    // Board is 1D
+    private boolean whiteToMove () {
+        return (numActualMoves % 2 == 0);
+    }
+
+    private boolean blackToMove () {
+        return (numActualMoves % 2 == 1);
+    }
+
     public void makeMove(Move m) {
         int start = m.getStartIdx();
         int end = m.getEndIdx();
@@ -211,15 +244,15 @@ public class Board {
         possibleMoves.clear();
         numActualMoves++;
 
-        int kingIdx = (numActualMoves % 2 == 0) ? whiteKing : blackKing;
-        int kingColor = (numActualMoves % 2 == 0) ? 1 : -1;
+        int kingIdx = whiteToMove() ? whiteKing : blackKing;
+        int kingColor = whiteToMove() ? 1 : -1;
         ArrayList<Integer> checkingPieces = piecesAttackingTile(kingIdx, kingColor);
-        System.out.println(checkingPieces.size());
+//        System.out.println(checkingPieces.size());
         whiteInCheck = false;
         blackInCheck = false;
         possibleBlocks.clear();
         if (checkingPieces.size() > 0) {
-            if (numActualMoves % 2 == 0)
+            if (whiteToMove())
                 whiteInCheck = true;
             else
                 blackInCheck = true;
@@ -233,20 +266,78 @@ public class Board {
 
         int p = pieces[end];
         updatePossibleMoves();
+        System.out.println(possibleMoves.size());
 
-        if (Math.abs(p) > P) return;
-        // If pawn is at the end, promote
-        if ((p == 1 && row(end) == 0) || (p == -1 && row(end) == 7)) {
-            promotingIdx = end;
+        if (Math.abs(p) == P) {
+            // If pawn is at the end, promote
+            if ((p == 1 && row(end) == 0) || (p == -1 && row(end) == 7)) {
+                promotingIdx = end;
+            }
+
+            int delta = Math.abs(start - end);
+            // If en passant
+            if ((delta == 7 || delta == 9) && endPiece == 0) {
+                int color = pieces[end];
+                pieces[end + 8 * color] = 0;
+            }
         }
 
-        int delta = Math.abs(start - end);
-        // If en passant
-        if ((delta == 7 || delta == 9) && endPiece == 0) {
-            int color = pieces[end];
-            pieces[end + 8 * color] = 0;
+        int capturedPiece = m.getCapturedPiece();
+        if (capturedPiece == 0) movesWithoutCap++;
+        else movesWithoutCap = 0;
+
+        gameState = getGameState();
+        String s = switch (gameState) {
+            case PLAYING -> "Playing";
+            case DRAW -> "Draw";
+            case WHITEWINS -> "White Wins";
+            case BLACKWINS -> "Black Wins";
+            default -> "Unknown game state" + gameState;
+        };
+        System.out.println(s);
+
+        if (whiteToMove()) {
+            if (m.equals(lastWhiteMove)) repeatedWhiteMoves++;
+            else {
+                lastWhiteMove = m;
+                repeatedWhiteMoves = 1;
+            }
+        }
+        else {
+            if (m.equals(lastBlackMove)) repeatedBlackMoves++;
+            else {
+                lastBlackMove = m;
+                repeatedBlackMoves = 1;
+            }
+        }
+    }
+
+    private int getGameState () {
+        // CHECKMATE
+        if (possibleMoves.size() == 0) {
+            if (whiteToMove() && whiteInCheck)
+                return BLACKWINS;
+            else if (blackToMove() && blackInCheck)
+                return WHITEWINS;
+            else
+                return DRAW; // Stalemate
         }
 
+        // REPEATED MOVES
+        if (repeatedWhiteMoves == 3 && repeatedBlackMoves == 3)
+            return DRAW;
+
+        // Insufficient material occurs when both players have only
+        // 1. King
+        // 2. King and Knight
+        // 3. King and Bishop
+        if (whitePieceCount <= 2 && blackPieceCount <= 2) {
+            boolean whiteInsufficient = (whitePieceValue <= K + B && whitePieceValue != K + P);
+            boolean blackInsufficient = (blackPieceValue <= K + B && blackPieceValue != K + P);
+            if (whiteInsufficient && blackInsufficient) return DRAW;
+        }
+
+        return PLAYING;
     }
 
     public int getPromotingIdx() {
@@ -579,11 +670,11 @@ public class Board {
         for (int i = 0; i < pieces.length; i++) {
             if(temp.contains(i)){
                 possibleMoves.addAll(addPinnedPieceMoves(i));
-                System.out.println(addPinnedPieceMoves((i)));
+//                System.out.println(addPinnedPieceMoves((i)));
                 continue;
             }
             int piece = pieces[i];
-            int whichColor = numActualMoves % 2 == 0 ? 1 : -1;
+            int whichColor = whiteToMove() ? 1 : -1;
             if (piece * whichColor > 0) {
                 LinkedList<Move> movesAtIdx =  switch (Math.abs(piece)) {
                     case P -> getPawnMoves(i);
