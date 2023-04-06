@@ -6,7 +6,7 @@ import java.util.LinkedList;
 
 public class Sketch extends PApplet {
 
-    private Chess chess;
+    private Board board;
     private PImage[] whitePieces;
     private PImage[] blackPieces;
 
@@ -20,7 +20,7 @@ public class Sketch extends PApplet {
     }
 
     public Sketch() {
-        this.chess = new Chess(new HPlayer(), new AIPlayer());
+        this.board = new Board();
         this.selectedSquare = -1;
     }
 
@@ -66,7 +66,7 @@ public class Sketch extends PApplet {
 
     private HashMap<Integer, Move> possibleMovesAtSelectedSq() {
         HashMap<Integer, Move> ret = new HashMap<>();
-        LinkedList<Move> allPossibleMoves = chess.possibleMovesAtPosition(selectedSquare);
+        LinkedList<Move> allPossibleMoves = board.possibleMovesAtPosition(selectedSquare);
 
         boolean pieceFound = false;
         for (Move m : allPossibleMoves) {
@@ -83,7 +83,7 @@ public class Sketch extends PApplet {
     }
 
     private boolean promoting() {
-        return (chess.currentBoard().getPromotingIdx() > -1);
+        return (board.getPromotingIdx() > -1);
     }
 
     private void drawBoard() {
@@ -92,7 +92,7 @@ public class Sketch extends PApplet {
         noStroke();
         background(237, 226, 199);
         float squareWidth = width / 8f;
-        int[] currentBoard = chess.currentBoard().pieces;
+        int[] currentBoard = board.pieces;
         PImage whitePromoteUI;
         PImage blackPromoteUI;
 
@@ -129,7 +129,7 @@ public class Sketch extends PApplet {
 
         // displays a not cursed graphic for promotion
         if (promoting()) {
-            if(chess.currentBoard().getPromotingIdx() < 8){
+            if(board.getPromotingIdx() < 8){
                 whitePromoteUI = loadImage("sprites/PromotingGraphicsv1/WhitePromoteUI_v1.png");
                 image(whitePromoteUI, 128, 128);
             } else {
@@ -146,9 +146,17 @@ public class Sketch extends PApplet {
     @Override
     public void draw () {
         drawBoard();
-      //  if(chess.currentBoard().numActualMoves%2==1) {
-      //      chess.aiMove();
-      //  }
+        switch (board.getGameState()) {
+            case Board.WHITEWINS -> {
+                // white mated black
+            }
+            case Board.BLACKWINS -> {
+                // black mated white
+            }
+            case Board.DRAW -> {
+                // Perfect chess is always a draw
+            }
+        }
     }
 
     @Override
@@ -158,7 +166,7 @@ public class Sketch extends PApplet {
         int col = mouseX*8 / width;
 
         if(selectedSquare!=-1 && possibleMoves.containsKey(row*8 + col)){
-            chess.makeMove(possibleMoves.get(row*8 + col));
+            board.makeMove(possibleMoves.get(row*8 + col));
         }
         selectedSquare = row*8 + col;
     }
@@ -168,10 +176,10 @@ public class Sketch extends PApplet {
         if (!promoting()) return;
 
         switch (key) {
-            case '1' -> chess.promote(Board.N);
-            case '2' -> chess.promote(Board.B);
-            case '3' -> chess.promote(Board.R);
-            case '4' -> chess.promote(Board.Q);
+            case '1' -> board.promote(Board.N);
+            case '2' -> board.promote(Board.B);
+            case '3' -> board.promote(Board.R);
+            case '4' -> board.promote(Board.Q);
         }
     }
 }

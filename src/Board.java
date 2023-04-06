@@ -287,16 +287,6 @@ public class Board {
         if (capturedPiece == 0) movesWithoutCap++;
         else movesWithoutCap = 0;
 
-        gameState = getGameState();
-        String s = switch (gameState) {
-            case PLAYING -> "Playing";
-            case DRAW -> "Draw";
-            case WHITEWINS -> "White Wins";
-            case BLACKWINS -> "Black Wins";
-            default -> "Unknown game state" + gameState;
-        };
-        System.out.println(s);
-
         if (whiteToMove()) {
             if (m.equals(lastWhiteMove)) repeatedWhiteMoves++;
             else {
@@ -311,9 +301,20 @@ public class Board {
                 repeatedBlackMoves = 1;
             }
         }
+
+        gameState = getGameState();
+        String s = switch (gameState) {
+            case PLAYING -> "Playing";
+            case DRAW -> "Draw";
+            case WHITEWINS -> "White Wins";
+            case BLACKWINS -> "Black Wins";
+            default -> "Unknown game state" + gameState;
+        };
+        System.out.println(s);
+
     }
 
-    private int getGameState () {
+    public int getGameState () {
         // CHECKMATE
         if (possibleMoves.size() == 0) {
             if (whiteToMove() && whiteInCheck)
@@ -361,6 +362,16 @@ public class Board {
 
     private int column(int idx) {
         return idx % 8;
+    }
+
+    public LinkedList<Move> possibleMovesAtPosition (int idx) {
+        LinkedList<Move> ret = new LinkedList<>();
+
+        for (Move m : possibleMoves) {
+            if (m.getStartIdx() == idx)
+                ret.push(m);
+        }
+        return ret;
     }
 
     private void addPossibleMove (LinkedList<Move> moveList, int start, int end, int capturedPiece) {
