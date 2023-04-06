@@ -732,10 +732,15 @@ public class Board {
     }
     public void undoMove(){
         Move lastMove = pastMoves.pop();
-        pieces[lastMove.getStartIdx()] = lastMove.getEndIdx();
+        int color = pieces[lastMove.getEndIdx()]<0?-1:1;
+        pieces[lastMove.getStartIdx()] = pieces[lastMove.getEndIdx()];
         pieces[lastMove.getEndIdx()]=lastMove.getCapturedPiece();
         updatePossibleMoves();
         //potentially other things
+        if(Math.abs(pieces[lastMove.getStartIdx()])==K && Math.abs(lastMove.getEndIdx()-lastMove.getStartIdx())==2){
+            pieces[lastMove.getStartIdx()+(lastMove.getEndIdx()-lastMove.getStartIdx())/2]=0;
+            pieces[lastMove.getEndIdx()+((lastMove.getEndIdx()-lastMove.getStartIdx())<0 ? -2 : 1)] = R*color;
+        }
     }
 
     public int evaluate(){
