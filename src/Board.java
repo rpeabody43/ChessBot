@@ -774,7 +774,7 @@ public class Board {
 
     }
 
-    public int evaluate(){
+    public int evaluateCurrentPos(){
         int eval = 0;
         for(int i =0; i< pieces.length; i++) {
             int color = pieces[i]>0?1:pieces[i]<0?-1:0;
