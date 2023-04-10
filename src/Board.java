@@ -733,18 +733,45 @@ public class Board {
     }
     public void undoMove(){
         Move lastMove = pastMoves.pop();
-        int color = pieces[lastMove.getEndIdx()]<0?-1:1;
-        pieces[lastMove.getStartIdx()] = pieces[lastMove.getEndIdx()];
-        pieces[lastMove.getEndIdx()]=lastMove.getCapturedPiece();
+        int start = lastMove.getStartIdx();
+        int end = lastMove.getEndIdx();
+        int capturedPiece = lastMove.getCapturedPiece();
+
+        int movedPiece = pieces[end];
+        int color = movedPiece < 0 ? -1 : 1;
+
+        // Undo the move
+        pieces[start] = movedPiece;
+        pieces[end] = capturedPiece;
+
+        // En passant
+        if (Math.abs(movedPiece) == P && capturedPiece == 0) {
+            int delta = end - start;
+            if (Math.abs(delta) % 8 != 0) {
+                int capturedPawnIdx;
+                if (color == 1) {
+                    capturedPawnIdx = (delta == -9) ? start-1 : start+1;
+                }
+                else
+                {
+                    capturedPawnIdx = (delta == 9) ? start+1 : start-1;
+                }
+                pieces[capturedPawnIdx] = P * -color;
+            }
+        }
+
+        if(Math.abs(pieces[start])==K && Math.abs(end-start)==2){
+            pieces[start+(end-start)/2]=0;
+            pieces[end+((end-start)<0 ? -2 : 1)] = R*color;
+            kingMoved[color]=false;
+            rookMoved[end==2?0 : end==6?1 : end==62?3:2]=false;
+        }
+
+
         numActualMoves--;
         updatePossibleMoves(); //idk if this is necessary
         //potentially other things
-        if(Math.abs(pieces[lastMove.getStartIdx()])==K && Math.abs(lastMove.getEndIdx()-lastMove.getStartIdx())==2){
-            pieces[lastMove.getStartIdx()+(lastMove.getEndIdx()-lastMove.getStartIdx())/2]=0;
-            pieces[lastMove.getEndIdx()+((lastMove.getEndIdx()-lastMove.getStartIdx())<0 ? -2 : 1)] = R*color;
-            kingMoved[color]=false;
-            rookMoved[lastMove.getEndIdx()==2?0 : lastMove.getEndIdx()==6?1 : lastMove.getEndIdx()==62?3:2]=false;
-        }
+
     }
 
     public int evaluate(){
