@@ -793,6 +793,28 @@ public class Board {
         }
         return eval;
     }
+    public Move bestNextMove(int color, int dep, int alpha, int beta){
+        if(dep<=0) return evaluate();
+        // copying wikipedia
+        if (numActualMoves%2==color){
+            int value = -1000000;
+            for (Move m : possibleMoves){
+                value = Math.max(value, bestNextMove(color, depth − 1, alpha, beta))
+                if (value > beta)
+                    break // beta cutoff
+                alpha = Math.max(alpha, value)
+                }
+            return value
+        }
+        int value = 1000000
+        for(Move m : possibleMoves){
+            value = Math.min(value, bestNextMove(color, depth − 1, alpha, beta))
+            if value < alpha then
+                break // α cutoff 
+            beta = Math.min(beta, value)
+        }
+        return value
+    }
 
 
 }
