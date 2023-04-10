@@ -735,8 +735,8 @@ public class Board {
         int color = pieces[lastMove.getEndIdx()]<0?-1:1;
         pieces[lastMove.getStartIdx()] = pieces[lastMove.getEndIdx()];
         pieces[lastMove.getEndIdx()]=lastMove.getCapturedPiece();
-        // updatePossibleMoves(); idk if this is necessary
-        numActualMoves-=1;
+        updatePossibleMoves(); //idk if this is necessary
+        numActualMoves-=2;
         //potentially other things
         if(Math.abs(pieces[lastMove.getStartIdx()])==K && Math.abs(lastMove.getEndIdx()-lastMove.getStartIdx())==2){
             pieces[lastMove.getStartIdx()+(lastMove.getEndIdx()-lastMove.getStartIdx())/2]=0;
