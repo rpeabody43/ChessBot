@@ -435,7 +435,8 @@ public class Board {
                 // If the last move was a 2 square pawn move
                 if (Math.abs(row(lastMove.getEndIdx()) - row(lastMove.getStartIdx())) == 2) {
                     int capturingIdx = lastMove.getEndIdx();
-                    addPossibleMove(ret, idx, capturingIdx - 8 * color, P);
+                    addPossibleMove(ret, idx, capturingIdx - 8 * color, 0);
+                    // Don't pass in any captured piece because otherwise it would be indistinguishable
                 }
             }
         }
