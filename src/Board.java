@@ -741,6 +741,8 @@ public class Board {
         if(Math.abs(pieces[lastMove.getStartIdx()])==K && Math.abs(lastMove.getEndIdx()-lastMove.getStartIdx())==2){
             pieces[lastMove.getStartIdx()+(lastMove.getEndIdx()-lastMove.getStartIdx())/2]=0;
             pieces[lastMove.getEndIdx()+((lastMove.getEndIdx()-lastMove.getStartIdx())<0 ? -2 : 1)] = R*color;
+            kingMoved[color]=false;
+            rookMoved[lastMove.getEndIdx()==2?0 : lastMove.getEndIdx()==6?1 : lastMove.getEndIdx()==62?3:2]=false;
         }
     }
 
