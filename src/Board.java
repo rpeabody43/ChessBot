@@ -41,8 +41,6 @@ public class Board {
     int[] pieces;
     boolean[] kingMoved;
 
-    int promotingIdx;
-
     HashSet<Integer> pinnedPieces;
     HashSet<Integer> possibleBlocks;
 
@@ -77,7 +75,6 @@ public class Board {
         whiteKing = 60;
 
         pastMoves = new Stack<>();
-        promotingIdx = -1;
         possibleBlocks = new HashSet<>();
 
         updatePossibleMoves();
@@ -241,6 +238,10 @@ public class Board {
         else if (pieces[end] == -K) blackKing = end;
         pieces[start] = 0;
 
+        if (m.getPromoteTo() != 0) {
+            pieces[end] = m.getPromoteTo();
+        }
+
         pastMoves.push(m);
         possibleMoves.clear();
         numActualMoves++;
@@ -270,11 +271,6 @@ public class Board {
         System.out.println(possibleMoves.size());
 
         if (Math.abs(p) == P) {
-            // If pawn is at the end, promote
-            if ((p == 1 && row(end) == 0) || (p == -1 && row(end) == 7)) {
-                promotingIdx = end;
-            }
-
             int delta = Math.abs(start - end);
             // If en passant
             if ((delta == 7 || delta == 9) && endPiece == 0) {
@@ -311,6 +307,7 @@ public class Board {
                 repeatedBlackMoves = 1;
             }
         }
+
 
         gameState = getGameState();
         String s = switch (gameState) {
@@ -352,25 +349,16 @@ public class Board {
         return PLAYING;
     }
 
-    public int getPromotingIdx() {
-        return promotingIdx;
-    }
-
-    public void promote(int piece) {
-        pieces[promotingIdx] = piece * pieces[promotingIdx];
-        promotingIdx = -1;
-    }
-
     // checks if a move is valid
     private boolean moveValid(Move move) {
         return possibleMoves.contains(move); // STUB
     }
 
-    private int row(int idx) {
+    public static int row(int idx) {
         return idx / 8;
     }
 
-    private int column(int idx) {
+    public static int column(int idx) {
         return idx % 8;
     }
 
@@ -382,6 +370,12 @@ public class Board {
                 ret.push(m);
         }
         return ret;
+    }
+
+    private void addPossibleMove (LinkedList<Move> moveList, int start, int end, int capturedPiece, int promoteTo) {
+        if (possibleBlocks.size() > 0 && !possibleBlocks.contains(end)) return;
+        Move m = new Move(start, end, capturedPiece, promoteTo);
+        moveList.add(m);
     }
 
     private void addPossibleMove (LinkedList<Move> moveList, int start, int end, int capturedPiece) {
@@ -419,8 +413,13 @@ public class Board {
         for (int change = start * dir; Math.abs(change) <= Math.abs(end); change += dir) {
             int p = pieces[idx + change];
             if (change == 8 || change == -8) { // Straight up/down
-                if (p == 0)
-                    addPossibleMove(ret, idx, idx + change, 0);
+                if (p == 0) {
+                    if (row(idx + change) == 0 || row(idx + change) == 7) // Promoting
+                        for (int i = N; i <= Q; i++)
+                            addPossibleMove(ret, idx, idx + change, 0, i*color);
+                    else
+                        addPossibleMove(ret, idx, idx + change, 0);
+                }
             } else {
                 if (p * color < 0) // If different colors
                     addPossibleMove(ret, idx, idx + change, p);
@@ -776,7 +775,6 @@ public class Board {
             kingMoved[color]=false;
             rookMoved[end==2?0 : end==6?1 : end==62?3:2]=false;
         }
-
 
         numActualMoves--;
         updatePossibleMoves(); //idk if this is necessary

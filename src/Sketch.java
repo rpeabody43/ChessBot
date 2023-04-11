@@ -10,6 +10,9 @@ public class Sketch extends PApplet {
     private PImage[] whitePieces;
     private PImage[] blackPieces;
 
+    private boolean promoting;
+    private Move promoteMove;
+
     private int selectedSquare;
     private HashMap<Integer, Move> possibleMoves;
 
@@ -22,6 +25,7 @@ public class Sketch extends PApplet {
     public Sketch() {
         this.board = new Board();
         this.selectedSquare = -1;
+        this.promoting = false;
     }
 
     // I LOVE SETTINGS
@@ -82,10 +86,6 @@ public class Sketch extends PApplet {
         return ret;
     }
 
-    private boolean promoting() {
-        return (board.getPromotingIdx() > -1);
-    }
-
     private void drawBoard() {
         // BACKGROUND
         fill(105, 59, 73);
@@ -128,8 +128,8 @@ public class Sketch extends PApplet {
         }
 
         // displays a not cursed graphic for promotion
-        if (promoting()) {
-            if(board.getPromotingIdx() < 8){
+        if (promoting) {
+            if(board.whiteToMove()){
                 whitePromoteUI = loadImage("sprites/PromotingGraphicsv1/WhitePromoteUI_v1.png");
                 image(whitePromoteUI, 128, 128);
             } else {
@@ -161,25 +161,41 @@ public class Sketch extends PApplet {
 
     @Override
     public void mouseClicked() {
-        if (promoting()) return;
+        if (promoting) return;
         int row = mouseY*8 / height;
         int col = mouseX*8 / width;
 
         if(selectedSquare!=-1 && possibleMoves.containsKey(row*8 + col)){
-            board.makeMove(possibleMoves.get(row*8 + col));
+            Move m = possibleMoves.get(row*8 + col);
+            if (Math.abs(board.pieces[m.getStartIdx()]) == Board.P) {
+                if (Board.row(m.getEndIdx()) == 0 || Board.row(m.getEndIdx()) == 7) {
+                    promoting = true;
+                    promoteMove = m;
+                }
+            }
+
+            if (!promoting)
+                board.makeMove(m);
         }
         selectedSquare = row*8 + col;
     }
 
     @Override
     public void keyPressed() {
-        if (promoting()) {
-            switch (key) {
-                case '1' -> board.promote(Board.N);
-                case '2' -> board.promote(Board.B);
-                case '3' -> board.promote(Board.R);
-                case '4' -> board.promote(Board.Q);
-            }
+        if (promoting) {
+            int color = board.whiteToMove() ? 1 : -1;
+            int promotingTo = switch (key) {
+                case '1' -> Board.N;
+                case '2' -> Board.B;
+                case '3' -> Board.R;
+                case '4' -> Board.Q;
+                default -> 0;
+            } * color;
+
+            promoteMove.setPromoteTo(promotingTo);
+
+            board.makeMove(promoteMove);
+            promoting = false;
         }
 
         // DEBUGGING PURPOSES
