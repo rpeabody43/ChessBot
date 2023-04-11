@@ -793,8 +793,8 @@ public class Board {
         }
         return eval;
     }
-    public int evalMove(Move m, int dep, int alpha, int beta){
-        makeMove(m);
+    public int evalMove(Move move, int dep, int alpha, int beta){
+        makeMove(move);
         int res = 0;
         //copied from https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning
         if(dep<=0) res = evaluateCurrentPos();
@@ -822,10 +822,14 @@ public class Board {
     
     public Move bestNextMove(){
         int color = numActualMoves%2==0?1:-1;
-        Move bestMove;
+        Move bestMove = null;
         int bestEval = -1000000000;
         for(Move m : possibleMoves){
-            if(evalMove(m, 5, -1000000000, 1000000000)*color>bestEval) bestMove = m;
+            int eval = evalMove(m, 5, -1000000000, 1000000000);
+            if(eval*color>bestEval) {
+                bestMove = m;
+                bestEval = eval;
+            }
         }
         return bestMove;
     }
