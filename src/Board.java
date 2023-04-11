@@ -793,27 +793,41 @@ public class Board {
         }
         return eval;
     }
-    public Move bestNextMove(int color, int dep, int alpha, int beta){
-        if(dep<=0) return evaluate();
-        // copying wikipedia
-        if (numActualMoves%2==color){
-            int value = -1000000;
-            for (Move m : possibleMoves){
-                value = Math.max(value, bestNextMove(color, depth − 1, alpha, beta))
-                if (value > beta)
-                    break // beta cutoff
-                alpha = Math.max(alpha, value)
-                }
-            return value
+    public int evalMove(Move m, int dep, int alpha, int beta){
+        makeMove(m);
+        int res = 0;
+        //copied from https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning
+        if(dep<=0) res = evaluateCurrentPos();
+        else if(numActualMoves%2==0){ //maximizing player is white
+            int value = -1000000000;
+            for(Move m : possibleMoves){
+                value = Math.max(value, evalMove(m, dep-1, alpha, beta));
+                if (value>beta) break;
+                alpha = Math.max(alpha,value);
+            }
+            res=value;
+        }else{
+            int value = 1000000000;
+            for(Move m : possibleMoves){
+                value = Math.min(value, evalMove(m, dep-1, alpha, beta));
+                if(value<alpha) break;
+                beta = Math.min(beta,value);
+            }
+            res=value;
         }
-        int value = 1000000
+        undoMove();
+        return res;
+    }
+
+    
+    public Move bestNextMove(){
+        int color = numActualMoves%2==0?1:-1;
+        Move bestMove;
+        int bestEval = -1000000000;
         for(Move m : possibleMoves){
-            value = Math.min(value, bestNextMove(color, depth − 1, alpha, beta))
-            if value < alpha then
-                break // α cutoff 
-            beta = Math.min(beta, value)
+            if(evalMove(m, 5, -1000000000, 1000000000)*color>bestEval) bestMove = m;
         }
-        return value
+        return bestMove;
     }
 
 
