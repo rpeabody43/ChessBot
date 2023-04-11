@@ -190,11 +190,11 @@ public class Board {
         return ret;
     }
 
-    private boolean whiteToMove () {
+    public boolean whiteToMove () {
         return (numActualMoves % 2 == 0);
     }
 
-    private boolean blackToMove () {
+    public boolean blackToMove () {
         return (numActualMoves % 2 == 1);
     }
 
@@ -783,8 +783,4 @@ public class Board {
         //potentially other things
 
     }
-
-
-
-
 }
