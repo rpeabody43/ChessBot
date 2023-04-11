@@ -768,8 +768,11 @@ public class Board {
                 }
                 pieces[capturedPawnIdx] = P * -color;
             }
+        }   
+        // promotion, if this is bugged then it's because I'm getting an infusion and im writing this on my phone
+        if (Math.abs(movedPiece) == P && lastMove.getPromoteTo()!=0){
+            pieces[start]=P*color;
         }
-
         if(Math.abs(pieces[start])==K && Math.abs(end-start)==2){
             pieces[start+(end-start)/2]=0;
             pieces[end+((end-start)<0 ? -2 : 1)] = R*color;
