@@ -288,6 +288,11 @@ public class Board {
         else movesWithoutCap = 0;
 
         if (whiteToMove()) {
+            if (capturedPiece != 0) {
+                blackPieceCount--;
+                blackPieceValue--;
+            }
+
             if (m.equals(lastWhiteMove)) repeatedWhiteMoves++;
             else {
                 lastWhiteMove = m;
@@ -295,6 +300,11 @@ public class Board {
             }
         }
         else {
+            if (capturedPiece != 0) {
+                whitePieceCount++;
+                whitePieceValue++;
+            }
+
             if (m.equals(lastBlackMove)) repeatedBlackMoves++;
             else {
                 lastBlackMove = m;
@@ -774,25 +784,7 @@ public class Board {
 
     }
 
-    public int evaluate(){
-        int eval = 0;
-        for(int i =0; i< pieces.length; i++) {
-            int color = pieces[i]>0?1:pieces[i]<0?-1:0;
-            int materialVal = switch(Math.abs(pieces[i])){
-                case P -> 100;
-                case N -> 300;
-                case B -> 300;
-                case Q -> 900;
-                case R -> 500;
-                case K -> 1000000;
-                default -> 0;
-            };
-            // positional code
-            int positionalVal = 0;
-            eval+=color*(materialVal+positionalVal);
-        }
-        return eval;
-    }
+
 
 
 }

@@ -173,13 +173,20 @@ public class Sketch extends PApplet {
 
     @Override
     public void keyPressed() {
-        if (!promoting()) return;
-
-        switch (key) {
-            case '1' -> board.promote(Board.N);
-            case '2' -> board.promote(Board.B);
-            case '3' -> board.promote(Board.R);
-            case '4' -> board.promote(Board.Q);
+        if (promoting()) {
+            switch (key) {
+                case '1' -> board.promote(Board.N);
+                case '2' -> board.promote(Board.B);
+                case '3' -> board.promote(Board.R);
+                case '4' -> board.promote(Board.Q);
+            }
         }
+
+        // DEBUGGING PURPOSES
+//        if (key == 'z') {
+//            System.out.println("z");
+//            board.undoMove();
+//        }
+
     }
 }
