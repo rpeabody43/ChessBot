@@ -756,19 +756,13 @@ public class Board {
         // En passant
         if (Math.abs(movedPiece) == P && capturedPiece == 0) {
             int delta = end - start;
-            if (Math.abs(delta) % 8 != 0) {
-                int capturedPawnIdx;
-                if (color == 1) {
-                    capturedPawnIdx = (delta == -9) ? start-1 : start+1;
-                }
-                else
-                {
-                    capturedPawnIdx = (delta == 9) ? start+1 : start-1;
-                }
-                pieces[capturedPawnIdx] = P * -color;
-            }
+            if (Math.abs(delta) % 8 != 0) 
+                pieces[(delta == -9*color) ? start-1*color : start+1*color] = P * -color;
+        }   
+        // promotion, if this is bugged then it's because I'm getting an infusion and im writing this on my phone
+        if (Math.abs(movedPiece) == P && lastMove.getPromoteTo()!=0){
+            pieces[start]=P*color;
         }
-
         if(Math.abs(pieces[start])==K && Math.abs(end-start)==2){
             pieces[start+(end-start)/2]=0;
             pieces[end+((end-start)<0 ? -2 : 1)] = R*color;
