@@ -760,7 +760,7 @@ public class Board {
                 pieces[(delta == -9*color) ? start-1*color : start+1*color] = P * -color;
         }   
         // promotion, if this is bugged then it's because I'm getting an infusion and im writing this on my phone
-        if (Math.abs(movedPiece) == P && lastMove.getPromoteTo()!=0){
+        if (lastMove.getPromoteTo()!=0){
             pieces[start]=P*color;
         }
         if(Math.abs(pieces[start])==K && Math.abs(end-start)==2){

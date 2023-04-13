@@ -199,10 +199,10 @@ public class Sketch extends PApplet {
         }
 
         // DEBUGGING PURPOSES
-//        if (key == 'z') {
-//            System.out.println("z");
-//            board.undoMove();
-//        }
+        if (key == 'z') {
+            System.out.println("z");
+            board.undoMove();
+        }
 
     }
 }
