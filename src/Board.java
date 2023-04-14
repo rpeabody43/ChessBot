@@ -778,8 +778,19 @@ public class Board {
         if(Math.abs(pieces[start])==K && Math.abs(end-start)==2){
             pieces[start+(end-start)/2]=0;
             pieces[end+((end-start)<0 ? -2 : 1)] = R*color;
-            kingMoved[color]=false;
+            kingMoved[color==-1?0:1]=false;
             rookMoved[end==2?0 : end==6?1 : end==62?3:2]=false;
+        }
+        // rook moved
+        if(Math.abs(pieces[start])==R && (start==0||start==7||start==55||start==63)){
+            rookMoved[start==0 ? 0 : start==7 ? 1 : start==55 ? 2 : 3]=false;
+        }
+        if(Math.abs(pieces[end])==R && (end==0||end==7||end==55||end==63)){
+            rookMoved[start==0 ? 0 : start==7 ? 1 : start==55 ? 2 : 3]=false;
+        }
+        //king moved
+        if(Math.abs(pieces[start])==K && (start==4||start==60)){
+            kingMoved[start==4 ? 0 : 1] = false;
         }
 
         numActualMoves--;
