@@ -6,6 +6,8 @@ import java.util.LinkedList;
 
 public class Sketch extends PApplet {
 
+    private AI ai;
+
     private Board board;
     private PImage[] whitePieces;
     private PImage[] blackPieces;
@@ -24,6 +26,7 @@ public class Sketch extends PApplet {
 
     public Sketch() {
         this.board = new Board();
+        this.ai = new AI(board);
         this.selectedSquare = -1;
         this.promoting = false;
     }
@@ -111,6 +114,7 @@ public class Sketch extends PApplet {
                     square(squareWidth * j, squareWidth * i, squareWidth);
                     popStyle();
                 }
+
                 int piece = currentBoard[i * 8 + j];
                 if (piece != 0) {
                     int absPiece = Math.abs(piece);
@@ -156,6 +160,10 @@ public class Sketch extends PApplet {
             case Board.DRAW -> {
                 // Perfect chess is always a draw
             }
+        }
+
+        if(board.blackToMove()) {
+            board.makeMove(ai.bestNextMove());
         }
     }
 

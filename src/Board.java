@@ -145,16 +145,21 @@ public class Board {
     private HashSet<Integer> blockIdxs (int kingIdx, int attackingIdx) {
         HashSet<Integer> ret = new HashSet<>();
         ret.add(attackingIdx); // Capturing the attacker is always an option
+        int delta = attackingIdx - kingIdx;
+        int numSquaresHorz = Math.abs(column(attackingIdx) - column(kingIdx));
+        int numSquaresVert = Math.abs(row(attackingIdx) - row(kingIdx));
+
         int attackingPiece = Math.abs(pieces[attackingIdx]);
+        // A queen functionally becomes a bishop/rook here
+        if (attackingPiece == Q)
+            attackingPiece = numSquaresHorz == 0 ? R : B;
         if (attackingPiece == K || attackingPiece == P) {
             // Knights/Pawns can only be "blocked" by being captured
             return ret;
         }
 
-        int delta = attackingIdx - kingIdx;
-        int numSquares = Math.abs(column(attackingIdx) - column(kingIdx));
         if (attackingPiece == B) {
-            int direction = switch (delta / numSquares) {
+            int direction = switch (delta / numSquaresHorz) {
                 case -9 -> 0;
                 case -7 -> 1;
                 case 7 -> 2;
@@ -168,15 +173,14 @@ public class Board {
                 ret.add(idx);
             }
         }
-        else if (attackingPiece == R) {
-            int direction = switch (delta / numSquares) {
-                case -1 -> 0;
-                case -8 -> 1;
-                case 1 -> 2;
-                case 8 -> 3;
-
-                default -> 4; // This should never happen but hey it might
-            };
+        if (attackingPiece == R) {
+            int direction;
+            if (numSquaresVert == 0) {
+                direction = delta > 0 ? 1 : -1;
+            }
+            else {
+                direction = delta > 0 ? 8 : -8;
+            }
 
             for (int idx : StraightIterator.iter(kingIdx, direction)) {
                 if (idx == attackingIdx) break;
@@ -263,12 +267,12 @@ public class Board {
             if (checkingPieces.size() == 1)
                 possibleBlocks = blockIdxs(kingIdx, checkingPieces.get(0));
         }
-        System.out.println("white king in check: " + whiteInCheck + " black king in check: " + blackInCheck);
+        //System.out.println("white king in check: " + whiteInCheck + " black king in check: " + blackInCheck);
 
 
         int p = pieces[end];
         updatePossibleMoves();
-        System.out.println(possibleMoves.size());
+        //System.out.println(possibleMoves.size());
 
         if (Math.abs(p) == P) {
             int delta = Math.abs(start - end);
@@ -317,7 +321,7 @@ public class Board {
             case BLACKWINS -> "Black Wins";
             default -> "Unknown game state" + gameState;
         };
-        System.out.println(s);
+        //System.out.println(s);
 
     }
 
@@ -375,7 +379,10 @@ public class Board {
     private void addPossibleMove (LinkedList<Move> moveList, int start, int end, int capturedPiece, int promoteTo) {
         if (possibleBlocks.size() > 0 && !possibleBlocks.contains(end)) return;
         Move m = new Move(start, end, capturedPiece, promoteTo);
-        moveList.add(m);
+        if (capturedPiece > 0)
+            moveList.push(m);
+        else
+            moveList.add(m);
     }
 
     private void addPossibleMove (LinkedList<Move> moveList, int start, int end, int capturedPiece) {
@@ -712,8 +719,8 @@ public class Board {
     private void updatePossibleMoves() {
         possibleMoves = new LinkedList<>();
         HashMap<Integer,Integer> pinnedPieces = getPinnedPieces(numActualMoves%2==0?1:-1);
-        System.out.println(numActualMoves);
-        System.out.println(pinnedPieces);
+        //System.out.println(numActualMoves);
+        //System.out.println(pinnedPieces);
         //HashSet<Integer> temp = getPinnedPieces(numActualMoves%2==0?1:-1);
 //        System.out.println(numActualMoves);
 //        System.out.println(temp);
@@ -752,6 +759,11 @@ public class Board {
         // Undo the move
         pieces[start] = movedPiece;
         pieces[end] = capturedPiece;
+
+        if (pieces[start] == K)
+            whiteKing = start;
+        else if (pieces[start] == -K)
+            blackKing = start;
 
         // En passant
         if (Math.abs(movedPiece) == P && capturedPiece == 0) {

@@ -1,4 +1,5 @@
 import java.util.LinkedList;
+import java.util.List;
 
 public class AI {
 
@@ -30,10 +31,9 @@ public class AI {
         return eval;
     }
     public int evalMove(Move move, int dep, int alpha, int beta){
-        LinkedList<Move> possibleMoves = board.getPossibleMoves();
-
         board.makeMove(move);
         int res = 0;
+        List<Move> possibleMoves = new LinkedList<>(board.getPossibleMoves());
         //copied from https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning
         if(dep<=0) res = evaluateCurrentPos();
         else if(board.whiteToMove()){ //maximizing player is white
@@ -59,17 +59,19 @@ public class AI {
 
 
     public Move bestNextMove(){
-        LinkedList<Move> possibleMoves = board.getPossibleMoves();
+        List<Move> possibleMoves = new LinkedList<>(board.getPossibleMoves());
         int color = board.whiteToMove() ? 1 : -1;
         Move bestMove = null;
         int bestEval = -1000000000;
 
         for(Move m : possibleMoves){
-            int eval = evalMove(m, 5, -1000000000, 1000000000);
-            if(eval*color>bestEval) {
+            int eval = evalMove(m, 3, -1000000000, 1000000000);
+            System.out.println("eval: "+eval);
+            if(eval*color>bestEval || m == null) {
                 bestMove = m;
-                bestEval = eval;
+                bestEval = eval*color;
             }
+            System.out.println(possibleMoves.size());
         }
         return bestMove;
     }
