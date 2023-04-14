@@ -220,7 +220,7 @@ public class Board {
         if (start == 4) kingMoved[0] = true;
         else if (start == 60) rookMoved[1] = true;
 
-        if (start == 4 || start == 60) {
+        if ((start == 4 || start == 60) && Math.abs(pieces[start])==K) {
             if (end == 2) {
                 pieces[0] = 0;
                 pieces[3] = -R;
@@ -241,6 +241,9 @@ public class Board {
         if (pieces[end] == K) whiteKing = end;
         else if (pieces[end] == -K) blackKing = end;
         pieces[start] = 0;
+
+        if(pieces[whiteKing]==0) pieces[whiteKing]=K;
+        if(pieces[blackKing]==0) pieces[blackKing]=-K;
 
         if (m.getPromoteTo() != 0) {
             pieces[end] = m.getPromoteTo();
