@@ -223,7 +223,7 @@ public class Board {
         if (start == 4) kingMoved[0] = true;
         else if (start == 60) rookMoved[1] = true;
 
-        if (start == 4 || start == 60) {
+        if ((start == 4 || start == 60) && Math.abs(pieces[start])==K) {
             if (end == 2) {
                 pieces[0] = 0;
                 pieces[3] = -R;
@@ -244,6 +244,9 @@ public class Board {
         if (pieces[end] == K) whiteKing = end;
         else if (pieces[end] == -K) blackKing = end;
         pieces[start] = 0;
+
+        if(pieces[whiteKing]==0) pieces[whiteKing]=K;
+        if(pieces[blackKing]==0) pieces[blackKing]=-K;
 
         if (m.getPromoteTo() != 0) {
             pieces[end] = m.getPromoteTo();
@@ -781,8 +784,19 @@ public class Board {
         if(Math.abs(pieces[start])==K && Math.abs(end-start)==2){
             pieces[start+(end-start)/2]=0;
             pieces[end+((end-start)<0 ? -2 : 1)] = R*color;
-            kingMoved[color]=false;
+            kingMoved[color==-1?0:1]=false;
             rookMoved[end==2?0 : end==6?1 : end==62?3:2]=false;
+        }
+        // rook moved
+        if(Math.abs(pieces[start])==R && (start==0||start==7||start==55||start==63)){
+            rookMoved[start==0 ? 0 : start==7 ? 1 : start==55 ? 2 : 3]=false;
+        }
+        if(Math.abs(pieces[end])==R && (end==0||end==7||end==55||end==63)){
+            rookMoved[start==0 ? 0 : start==7 ? 1 : start==55 ? 2 : 3]=false;
+        }
+        //king moved
+        if(Math.abs(pieces[start])==K && (start==4||start==60)){
+            kingMoved[start==4 ? 0 : 1] = false;
         }
 
         numActualMoves--;
