@@ -1,3 +1,5 @@
+import jdk.jshell.Diag;
+
 import java.util.*;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -489,36 +491,18 @@ public class Board {
     private LinkedList<Move> getBishopMoves(int idx) {
         LinkedList<Move> ret = new LinkedList<>();
         int color = (pieces[idx] > 0) ? 1 : -1;
-        int[] deltas = {9, -9, 7, -7};
 
-        for (int d : deltas) {
-            boolean blocked = false;
-            for (int change = d; idx + change < pieces.length && !blocked; change += d) {
-                int newIdx = idx + change;
-                int col = column(newIdx);
-                if (newIdx < 0 || newIdx >= pieces.length) {
-                    blocked = true;
-                    continue;
+        for (int i = 0; i <= 3; i++) {
+            for (int newIdx : DiagIterator.iter(idx, i)) {
+                // If an open space or an opposite color piece, add a move
+                if (pieces[newIdx] * pieces[idx] <= 0) {
+                    addPossibleMove(ret, idx, newIdx, pieces[newIdx]);
+
+                    // add no more moves if it's a capture
+                    if (pieces[newIdx] * pieces[idx] < 0) break;
+                } else {
+                    break;
                 }
-
-                if (Math.abs(col - column(idx)) == 7) {
-                    blocked = true;
-                    continue;
-                }
-
-                if (col == 0 || col == 7)
-                    blocked = true;
-
-                int p = pieces[idx + change];
-                if (color * p > 0) {
-                    // If blocked by the same color, don't add a new move
-                    blocked = true;
-                    continue;
-                } else if (color * p < 0) {
-                    // If blocked by different color, add a move where you capture, but no more
-                    blocked = true;
-                }
-                addPossibleMove(ret, idx, idx + change, p);
             }
         }
         return ret;
@@ -526,17 +510,14 @@ public class Board {
 
     private LinkedList<Move> getRookMoves(int idx) { //do a castle check
         LinkedList<Move> ret = new LinkedList<>();
-        int row = row(idx);
-        int column = column(idx);
-        //this probably doesn't work but replit doesn't show red squiggly lines !!
-        int[] idxChange = {-1, -8, 1, 8};
-        int[] maxIterations = {column, row, 7 - column, 7 - row};
-        for (int i = 0; i < 4; i++) {
-            for (int j = 1; j <= maxIterations[i]; j++) {
-                if (pieces[idx + idxChange[i] * j] * pieces[idx] <= 0) {
-                    addPossibleMove(ret, idx, idx + idxChange[i] * j, pieces[idx + idxChange[i] * j]);
 
-                    if (pieces[idx + idxChange[i] * j] * pieces[idx] < 0) break;
+        //this probably doesn't work but replit doesn't show red squiggly lines !!
+        for (int i = 0; i < 4; i++) {
+            for (int newIdx : StraightIterator.iter(idx, i)) {
+                if (pieces[newIdx] * pieces[idx] <= 0) {
+                    addPossibleMove(ret, idx, newIdx, pieces[newIdx]);
+
+                    if (pieces[newIdx] * pieces[idx] < 0) break;
                 } else {
                     break;
                 }
