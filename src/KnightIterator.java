@@ -32,7 +32,7 @@ public class KnightIterator implements Iterable<Integer> {
                 int newIdx = idx + knightDeltas[i];
                 int newCol = column + hozChanges[i];
 
-                if (newIdx <= -1 || newIdx >= 8)
+                if (newIdx <= -1 || newIdx >= 64)
                     continue;
                 if (newCol <= -1 || newCol >= 8)
                     continue;

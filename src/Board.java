@@ -60,10 +60,10 @@ public class Board {
         rookMoved = new boolean[]{false, false, false, false};
         pieces = new int[]{
                 -R, -N, -B, -Q, -K, -B, -N, -R, // Black Pieces
-                -P, -P, -P, -P, -P, -P, -P, -P, // Black Pawns
+                -P, -P, -P, -P, -P, R, -P, -P, // Black Pawns
 
                 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, 0, 0,
+                0, 0, 0, 0, 0, 0, N, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
 
@@ -88,16 +88,17 @@ public class Board {
         gameState = PLAYING;
     }
 
-    private int tileAttackedByPiece(int color, int piece, Iterable<Integer> iter) {
+    private int tileAttackedByPiece(int color, int attackingPiece, Iterable<Integer> iter) {
         for (int newIdx : iter) {
             int p = pieces[newIdx];
             if (p == 0) continue;
 
             // queen is essentially a bishop and rook
-            boolean queenMove = Math.abs(piece) == B || Math.abs(piece) == R;
-            boolean attacked = p == -color * piece || (queenMove && p == -color*Q);
+            boolean queenMove = attackingPiece == B || attackingPiece == R;
+            boolean attacked = p == -color * attackingPiece || (queenMove && p == -color*Q);
             if (attacked) return newIdx;
-            else return -1;
+            // Knight is the only one that can't end early
+            else if (attackingPiece != N) return -1;
         }
         return -1;
     }
@@ -119,8 +120,10 @@ public class Board {
             }
         }
         // KNIGHT MOVES
-        int knightMove = tileAttackedByPiece(color, K, KnightIterator.iter(idx));
+        int knightMove = tileAttackedByPiece(color, N, KnightIterator.iter(idx));
         if (knightMove > -1) {
+            // This will only add one knight per square,
+            // but I don't think that will be a problem functionally
             attackingPieces.add(knightMove);
         }
 
@@ -153,7 +156,7 @@ public class Board {
         // A queen functionally becomes a bishop/rook here
         if (attackingPiece == Q)
             attackingPiece = numSquaresHorz == 0 ? R : B;
-        if (attackingPiece == K || attackingPiece == P) {
+        if (attackingPiece == N || attackingPiece == P) {
             // Knights/Pawns can only be "blocked" by being captured
             return ret;
         }
