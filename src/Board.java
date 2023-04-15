@@ -60,10 +60,10 @@ public class Board {
         rookMoved = new boolean[]{false, false, false, false};
         pieces = new int[]{
                 -R, -N, -B, -Q, -K, -B, -N, -R, // Black Pieces
-                -P, -P, -P, -P, -P, R, -P, -P, // Black Pawns
+                -P, -P, -P, -P, -P, -P, -P, -P, // Black Pawns
 
                 0, 0, 0, 0, 0, 0, 0, 0,
-                0, 0, 0, 0, 0, 0, N, 0,
+                0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
                 0, 0, 0, 0, 0, 0, 0, 0,
 
@@ -474,14 +474,14 @@ public class Board {
 
             int column = column(idx);
 
-
-            for (int i = 0; i < idxChange.length; i++) {
-                if (idx + idxChange[i] > -1 && idx + idxChange[i] < pieces.length) {
-                    if (hozChange[i] + column < 8 && hozChange[i] + column > -1)
-                        if (pieces[idx + idxChange[i]] * pieces[idx] <= 0)
-                            addPossibleMove(ret, idx, idx + idxChange[i], pieces[idx + idxChange[i]]);
-                }
-            }
+            for (int newIdx : KnightIterator.iter(idx))
+                if (pieces[newIdx] * pieces[idx] <= 0)
+                    addPossibleMove(ret, idx, newIdx, pieces[newIdx]);
+//            for (int i = 0; i < idxChange.length; i++) {
+//                if (idx + idxChange[i] > -1 && idx + idxChange[i] < pieces.length) {
+//                    if (hozChange[i] + column < 8 && hozChange[i] + column > -1)
+//                }
+//            }
         }
         return ret;
     }
