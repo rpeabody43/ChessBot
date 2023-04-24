@@ -1,5 +1,5 @@
-import java.util.*;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Stack;
@@ -41,8 +41,6 @@ public class Board {
     int[] pieces;
     boolean[] kingMoved;
 
-    int promotingIdx;
-
     HashSet<Integer> pinnedPieces;
     HashSet<Integer> possibleBlocks;
 
@@ -77,7 +75,6 @@ public class Board {
         whiteKing = 60;
 
         pastMoves = new Stack<>();
-        promotingIdx = -1;
         possibleBlocks = new HashSet<>();
 
         updatePossibleMoves();
@@ -91,16 +88,17 @@ public class Board {
         gameState = PLAYING;
     }
 
-    private int tileAttackedByPiece(int color, int piece, Iterable<Integer> iter) {
+    private int tileAttackedByPiece(int color, int attackingPiece, Iterable<Integer> iter) {
         for (int newIdx : iter) {
             int p = pieces[newIdx];
             if (p == 0) continue;
 
             // queen is essentially a bishop and rook
-            boolean queenMove = Math.abs(piece) == B || Math.abs(piece) == R;
-            boolean attacked = p == -color * piece || (queenMove && p == -color*Q);
+            boolean queenMove = attackingPiece == B || attackingPiece == R;
+            boolean attacked = p == -color * attackingPiece || (queenMove && p == -color*Q);
             if (attacked) return newIdx;
-            else return -1;
+            // Knight is the only one that can't end early
+            else if (attackingPiece != N) return -1;
         }
         return -1;
     }
@@ -122,8 +120,10 @@ public class Board {
             }
         }
         // KNIGHT MOVES
-        int knightMove = tileAttackedByPiece(color, K, KnightIterator.iter(idx));
+        int knightMove = tileAttackedByPiece(color, N, KnightIterator.iter(idx));
         if (knightMove > -1) {
+            // This will only add one knight per square,
+            // but I don't think that will be a problem functionally
             attackingPieces.add(knightMove);
         }
 
@@ -148,16 +148,21 @@ public class Board {
     private HashSet<Integer> blockIdxs (int kingIdx, int attackingIdx) {
         HashSet<Integer> ret = new HashSet<>();
         ret.add(attackingIdx); // Capturing the attacker is always an option
+        int delta = attackingIdx - kingIdx;
+        int numSquaresHorz = Math.abs(column(attackingIdx) - column(kingIdx));
+        int numSquaresVert = Math.abs(row(attackingIdx) - row(kingIdx));
+
         int attackingPiece = Math.abs(pieces[attackingIdx]);
-        if (attackingPiece == K || attackingPiece == P) {
+        // A queen functionally becomes a bishop/rook here
+        if (attackingPiece == Q)
+            attackingPiece = numSquaresHorz == 0 ? R : B;
+        if (attackingPiece == N || attackingPiece == P) {
             // Knights/Pawns can only be "blocked" by being captured
             return ret;
         }
 
-        int delta = attackingIdx - kingIdx;
-        int numSquares = Math.abs(column(attackingIdx) - column(kingIdx));
         if (attackingPiece == B) {
-            int direction = switch (delta / numSquares) {
+            int direction = switch (delta / numSquaresHorz) {
                 case -9 -> 0;
                 case -7 -> 1;
                 case 7 -> 2;
@@ -171,15 +176,14 @@ public class Board {
                 ret.add(idx);
             }
         }
-        else if (attackingPiece == R) {
-            int direction = switch (delta / numSquares) {
-                case -1 -> 0;
-                case -8 -> 1;
-                case 1 -> 2;
-                case 8 -> 3;
-
-                default -> 4; // This should never happen but hey it might
-            };
+        if (attackingPiece == R) {
+            int direction;
+            if (numSquaresVert == 0) {
+                direction = delta > 0 ? 1 : -1;
+            }
+            else {
+                direction = delta > 0 ? 8 : -8;
+            }
 
             for (int idx : StraightIterator.iter(kingIdx, direction)) {
                 if (idx == attackingIdx) break;
@@ -190,11 +194,11 @@ public class Board {
         return ret;
     }
 
-    private boolean whiteToMove () {
+    public boolean whiteToMove () {
         return (numActualMoves % 2 == 0);
     }
 
-    private boolean blackToMove () {
+    public boolean blackToMove () {
         return (numActualMoves % 2 == 1);
     }
 
@@ -219,7 +223,7 @@ public class Board {
         if (start == 4) kingMoved[0] = true;
         else if (start == 60) rookMoved[1] = true;
 
-        if (start == 4 || start == 60) {
+        if ((start == 4 || start == 60) && Math.abs(pieces[start])==K) {
             if (end == 2) {
                 pieces[0] = 0;
                 pieces[3] = -R;
@@ -240,6 +244,13 @@ public class Board {
         if (pieces[end] == K) whiteKing = end;
         else if (pieces[end] == -K) blackKing = end;
         pieces[start] = 0;
+
+        if(pieces[whiteKing]==0) pieces[whiteKing]=K;
+        if(pieces[blackKing]==0) pieces[blackKing]=-K;
+
+        if (m.getPromoteTo() != 0) {
+            pieces[end] = m.getPromoteTo();
+        }
 
         pastMoves.push(m);
         possibleMoves.clear();
@@ -262,19 +273,14 @@ public class Board {
             if (checkingPieces.size() == 1)
                 possibleBlocks = blockIdxs(kingIdx, checkingPieces.get(0));
         }
-        System.out.println("white king in check: " + whiteInCheck + " black king in check: " + blackInCheck);
+        //System.out.println("white king in check: " + whiteInCheck + " black king in check: " + blackInCheck);
 
 
         int p = pieces[end];
         updatePossibleMoves();
-        System.out.println(possibleMoves.size());
+        //System.out.println(possibleMoves.size());
 
         if (Math.abs(p) == P) {
-            // If pawn is at the end, promote
-            if ((p == 1 && row(end) == 0) || (p == -1 && row(end) == 7)) {
-                promotingIdx = end;
-            }
-
             int delta = Math.abs(start - end);
             // If en passant
             if ((delta == 7 || delta == 9) && endPiece == 0) {
@@ -288,6 +294,11 @@ public class Board {
         else movesWithoutCap = 0;
 
         if (whiteToMove()) {
+            if (capturedPiece != 0) {
+                blackPieceCount--;
+                blackPieceValue--;
+            }
+
             if (m.equals(lastWhiteMove)) repeatedWhiteMoves++;
             else {
                 lastWhiteMove = m;
@@ -295,12 +306,18 @@ public class Board {
             }
         }
         else {
+            if (capturedPiece != 0) {
+                whitePieceCount++;
+                whitePieceValue++;
+            }
+
             if (m.equals(lastBlackMove)) repeatedBlackMoves++;
             else {
                 lastBlackMove = m;
                 repeatedBlackMoves = 1;
             }
         }
+
 
         gameState = getGameState();
         String s = switch (gameState) {
@@ -310,7 +327,7 @@ public class Board {
             case BLACKWINS -> "Black Wins";
             default -> "Unknown game state" + gameState;
         };
-        System.out.println(s);
+        //System.out.println(s);
 
     }
 
@@ -342,25 +359,16 @@ public class Board {
         return PLAYING;
     }
 
-    public int getPromotingIdx() {
-        return promotingIdx;
-    }
-
-    public void promote(int piece) {
-        pieces[promotingIdx] = piece * pieces[promotingIdx];
-        promotingIdx = -1;
-    }
-
     // checks if a move is valid
     private boolean moveValid(Move move) {
         return possibleMoves.contains(move); // STUB
     }
 
-    private int row(int idx) {
+    public static int row(int idx) {
         return idx / 8;
     }
 
-    private int column(int idx) {
+    public static int column(int idx) {
         return idx % 8;
     }
 
@@ -372,6 +380,15 @@ public class Board {
                 ret.push(m);
         }
         return ret;
+    }
+
+    private void addPossibleMove (LinkedList<Move> moveList, int start, int end, int capturedPiece, int promoteTo) {
+        if (possibleBlocks.size() > 0 && !possibleBlocks.contains(end)) return;
+        Move m = new Move(start, end, capturedPiece, promoteTo);
+        if (capturedPiece > 0)
+            moveList.push(m);
+        else
+            moveList.add(m);
     }
 
     private void addPossibleMove (LinkedList<Move> moveList, int start, int end, int capturedPiece) {
@@ -409,8 +426,13 @@ public class Board {
         for (int change = start * dir; Math.abs(change) <= Math.abs(end); change += dir) {
             int p = pieces[idx + change];
             if (change == 8 || change == -8) { // Straight up/down
-                if (p == 0)
-                    addPossibleMove(ret, idx, idx + change, 0);
+                if (p == 0) {
+                    if (row(idx + change) == 0 || row(idx + change) == 7) // Promoting
+                        for (int i = N; i <= Q; i++)
+                            addPossibleMove(ret, idx, idx + change, 0, i*color);
+                    else
+                        addPossibleMove(ret, idx, idx + change, 0);
+                }
             } else {
                 if (p * color < 0) // If different colors
                     addPossibleMove(ret, idx, idx + change, p);
@@ -452,14 +474,14 @@ public class Board {
 
             int column = column(idx);
 
-
-            for (int i = 0; i < idxChange.length; i++) {
-                if (idx + idxChange[i] > -1 && idx + idxChange[i] < pieces.length) {
-                    if (hozChange[i] + column < 8 && hozChange[i] + column > -1)
-                        if (pieces[idx + idxChange[i]] * pieces[idx] <= 0)
-                            addPossibleMove(ret, idx, idx + idxChange[i], pieces[idx + idxChange[i]]);
-                }
-            }
+            for (int newIdx : KnightIterator.iter(idx))
+                if (pieces[newIdx] * pieces[idx] <= 0)
+                    addPossibleMove(ret, idx, newIdx, pieces[newIdx]);
+//            for (int i = 0; i < idxChange.length; i++) {
+//                if (idx + idxChange[i] > -1 && idx + idxChange[i] < pieces.length) {
+//                    if (hozChange[i] + column < 8 && hozChange[i] + column > -1)
+//                }
+//            }
         }
         return ret;
     }
@@ -467,36 +489,18 @@ public class Board {
     private LinkedList<Move> getBishopMoves(int idx) {
         LinkedList<Move> ret = new LinkedList<>();
         int color = (pieces[idx] > 0) ? 1 : -1;
-        int[] deltas = {9, -9, 7, -7};
 
-        for (int d : deltas) {
-            boolean blocked = false;
-            for (int change = d; idx + change < pieces.length && !blocked; change += d) {
-                int newIdx = idx + change;
-                int col = column(newIdx);
-                if (newIdx < 0 || newIdx >= pieces.length) {
-                    blocked = true;
-                    continue;
+        for (int i = 0; i <= 3; i++) {
+            for (int newIdx : DiagIterator.iter(idx, i)) {
+                // If an open space or an opposite color piece, add a move
+                if (pieces[newIdx] * pieces[idx] <= 0) {
+                    addPossibleMove(ret, idx, newIdx, pieces[newIdx]);
+
+                    // add no more moves if it's a capture
+                    if (pieces[newIdx] * pieces[idx] < 0) break;
+                } else {
+                    break;
                 }
-
-                if (Math.abs(col - column(idx)) == 7) {
-                    blocked = true;
-                    continue;
-                }
-
-                if (col == 0 || col == 7)
-                    blocked = true;
-
-                int p = pieces[idx + change];
-                if (color * p > 0) {
-                    // If blocked by the same color, don't add a new move
-                    blocked = true;
-                    continue;
-                } else if (color * p < 0) {
-                    // If blocked by different color, add a move where you capture, but no more
-                    blocked = true;
-                }
-                addPossibleMove(ret, idx, idx + change, p);
             }
         }
         return ret;
@@ -504,17 +508,14 @@ public class Board {
 
     private LinkedList<Move> getRookMoves(int idx) { //do a castle check
         LinkedList<Move> ret = new LinkedList<>();
-        int row = row(idx);
-        int column = column(idx);
-        //this probably doesn't work but replit doesn't show red squiggly lines !!
-        int[] idxChange = {-1, -8, 1, 8};
-        int[] maxIterations = {column, row, 7 - column, 7 - row};
-        for (int i = 0; i < 4; i++) {
-            for (int j = 1; j <= maxIterations[i]; j++) {
-                if (pieces[idx + idxChange[i] * j] * pieces[idx] <= 0) {
-                    addPossibleMove(ret, idx, idx + idxChange[i] * j, pieces[idx + idxChange[i] * j]);
 
-                    if (pieces[idx + idxChange[i] * j] * pieces[idx] < 0) break;
+        //this probably doesn't work but replit doesn't show red squiggly lines !!
+        for (int i = 0; i < 4; i++) {
+            for (int newIdx : StraightIterator.iter(idx, i)) {
+                if (pieces[newIdx] * pieces[idx] <= 0) {
+                    addPossibleMove(ret, idx, newIdx, pieces[newIdx]);
+
+                    if (pieces[newIdx] * pieces[idx] < 0) break;
                 } else {
                     break;
                 }
@@ -703,8 +704,8 @@ public class Board {
     private void updatePossibleMoves() {
         possibleMoves = new LinkedList<>();
         HashMap<Integer,Integer> pinnedPieces = getPinnedPieces(numActualMoves%2==0?1:-1);
-        System.out.println(numActualMoves);
-        System.out.println(pinnedPieces);
+        //System.out.println(numActualMoves);
+        //System.out.println(pinnedPieces);
         //HashSet<Integer> temp = getPinnedPieces(numActualMoves%2==0?1:-1);
 //        System.out.println(numActualMoves);
 //        System.out.println(temp);
@@ -744,95 +745,42 @@ public class Board {
         pieces[start] = movedPiece;
         pieces[end] = capturedPiece;
 
+        if (pieces[start] == K)
+            whiteKing = start;
+        else if (pieces[start] == -K)
+            blackKing = start;
+
         // En passant
         if (Math.abs(movedPiece) == P && capturedPiece == 0) {
             int delta = end - start;
-            if (Math.abs(delta) % 8 != 0) {
-                int capturedPawnIdx;
-                if (color == 1) {
-                    capturedPawnIdx = (delta == -9) ? start-1 : start+1;
-                }
-                else
-                {
-                    capturedPawnIdx = (delta == 9) ? start+1 : start-1;
-                }
-                pieces[capturedPawnIdx] = P * -color;
-            }
+            if (Math.abs(delta) % 8 != 0) 
+                pieces[(delta == -9*color) ? start-1*color : start+1*color] = P * -color;
+        }   
+        // promotion, if this is bugged then it's because I'm getting an infusion and im writing this on my phone
+        if (lastMove.getPromoteTo()!=0){
+            pieces[start]=P*color;
         }
-
         if(Math.abs(pieces[start])==K && Math.abs(end-start)==2){
             pieces[start+(end-start)/2]=0;
             pieces[end+((end-start)<0 ? -2 : 1)] = R*color;
-            kingMoved[color]=false;
+            kingMoved[color==-1?0:1]=false;
             rookMoved[end==2?0 : end==6?1 : end==62?3:2]=false;
         }
-
+        // rook moved
+        if(Math.abs(pieces[start])==R && (start==0||start==7||start==55||start==63)){
+            rookMoved[start==0 ? 0 : start==7 ? 1 : start==55 ? 2 : 3]=false;
+        }
+        if(Math.abs(pieces[end])==R && (end==0||end==7||end==55||end==63)){
+            rookMoved[start==0 ? 0 : start==7 ? 1 : start==55 ? 2 : 3]=false;
+        }
+        //king moved
+        if(Math.abs(pieces[start])==K && (start==4||start==60)){
+            kingMoved[start==4 ? 0 : 1] = false;
+        }
 
         numActualMoves--;
         updatePossibleMoves(); //idk if this is necessary
         //potentially other things
 
     }
-
-    public int evaluateCurrentPos(){
-        int eval = 0;
-        for(int i =0; i< pieces.length; i++) {
-            int color = pieces[i]>0?1:pieces[i]<0?-1:0;
-            int materialVal = switch(Math.abs(pieces[i])){
-                case P -> 100;
-                case N -> 300;
-                case B -> 300;
-                case Q -> 900;
-                case R -> 500;
-                case K -> 1000000;
-                default -> 0;
-            };
-            // positional code
-            int positionalVal = 0;
-            eval+=color*(materialVal+positionalVal);
-        }
-        return eval;
-    }
-    public int evalMove(Move move, int dep, int alpha, int beta){
-        makeMove(move);
-        int res = 0;
-        //copied from https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning
-        if(dep<=0) res = evaluateCurrentPos();
-        else if(numActualMoves%2==0){ //maximizing player is white
-            int value = -1000000000;
-            for(Move m : possibleMoves){
-                value = Math.max(value, evalMove(m, dep-1, alpha, beta));
-                if (value>beta) break;
-                alpha = Math.max(alpha,value);
-            }
-            res=value;
-        }else{
-            int value = 1000000000;
-            for(Move m : possibleMoves){
-                value = Math.min(value, evalMove(m, dep-1, alpha, beta));
-                if(value<alpha) break;
-                beta = Math.min(beta,value);
-            }
-            res=value;
-        }
-        undoMove();
-        return res;
-    }
-
-    
-    public Move bestNextMove(){
-        int color = numActualMoves%2==0?1:-1;
-        Move bestMove = null;
-        int bestEval = -1000000000;
-        for(Move m : possibleMoves){
-            int eval = evalMove(m, 5, -1000000000, 1000000000);
-            if(eval*color>bestEval) {
-                bestMove = m;
-                bestEval = eval;
-            }
-        }
-        return bestMove;
-    }
-
-
 }

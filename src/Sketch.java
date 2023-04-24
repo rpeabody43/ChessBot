@@ -8,10 +8,14 @@ import java.util.LinkedList;
 
 public class Sketch extends PApplet {
 
+    private AI ai;
+
     private Board board;
     private PImage[] whitePieces;
     private PImage[] blackPieces;
 
+    private boolean promoting;
+    private Move promoteMove;
     private PImage spotLightSprite;
 
     private int selectedSquare;
@@ -25,7 +29,9 @@ public class Sketch extends PApplet {
 
     public Sketch() {
         this.board = new Board();
+        this.ai = new AI(board);
         this.selectedSquare = -1;
+        this.promoting = false;
     }
 
     // I LOVE SETTINGS
@@ -87,10 +93,6 @@ public class Sketch extends PApplet {
         return ret;
     }
 
-    private boolean promoting() {
-        return (board.getPromotingIdx() > -1);
-    }
-
     private void drawBoard() {
         // BACKGROUND
         fill(105, 59, 73);
@@ -116,6 +118,7 @@ public class Sketch extends PApplet {
                     square(squareWidth * j, squareWidth * i, squareWidth);
                     popStyle();
                 }
+
                 int piece = currentBoard[i * 8 + j];
                 if (piece != 0) {
                     int absPiece = Math.abs(piece);
@@ -133,8 +136,8 @@ public class Sketch extends PApplet {
         }
 
         // displays a not cursed graphic for promotion
-        if (promoting()) {
-            if(board.getPromotingIdx() < 8){
+        if (promoting) {
+            if(board.whiteToMove()){
                 whitePromoteUI = loadImage("sprites/PromotingGraphicsv1/WhitePromoteUI_v1.png");
                 image(whitePromoteUI, 128, 128);
             } else {
@@ -210,16 +213,29 @@ public class Sketch extends PApplet {
                 String dTitle = "DRAW";
             }
         }
+
+        if(board.blackToMove()) {
+            board.makeMove(ai.bestNextMove());
+        }
     }
 
     @Override
     public void mouseClicked() {
-        if (promoting()) return;
+        if (promoting) return;
         int row = mouseY*8 / height;
         int col = mouseX*8 / width;
 
         if(selectedSquare!=-1 && possibleMoves.containsKey(row*8 + col)){
-            board.makeMove(possibleMoves.get(row*8 + col));
+            Move m = possibleMoves.get(row*8 + col);
+            if (Math.abs(board.pieces[m.getStartIdx()]) == Board.P) {
+                if (Board.row(m.getEndIdx()) == 0 || Board.row(m.getEndIdx()) == 7) {
+                    promoting = true;
+                    promoteMove = m;
+                }
+            }
+
+            if (!promoting)
+                board.makeMove(m);
             selectedSquare = -1;
         }else{
             selectedSquare = row*8 + col;
@@ -228,13 +244,27 @@ public class Sketch extends PApplet {
 
     @Override
     public void keyPressed() {
-        if (!promoting()) return;
+        if (promoting) {
+            int color = board.whiteToMove() ? 1 : -1;
+            int promotingTo = switch (key) {
+                case '1' -> Board.N;
+                case '2' -> Board.B;
+                case '3' -> Board.R;
+                case '4' -> Board.Q;
+                default -> 0;
+            } * color;
 
-        switch (key) {
-            case '1' -> board.promote(Board.N);
-            case '2' -> board.promote(Board.B);
-            case '3' -> board.promote(Board.R);
-            case '4' -> board.promote(Board.Q);
+            promoteMove.setPromoteTo(promotingTo);
+
+            board.makeMove(promoteMove);
+            promoting = false;
         }
+
+        // DEBUGGING PURPOSES
+        if (key == 'z') {
+            System.out.println("z");
+            board.undoMove();
+        }
+
     }
 }
