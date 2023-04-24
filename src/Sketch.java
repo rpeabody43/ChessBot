@@ -167,7 +167,7 @@ public class Sketch extends PApplet {
                 for (int i = 0; i < 8; i++) {
                     for (int j = 0; j < 8; j++) {
                         int piece = currentBoard[i * 8 + j];
-                        if (Math.abs(piece) != 6 && board.pastMoves.peek().getEndIdx() != (i * 8 + j)) {
+                        if (Math.abs(piece) != 6 && board.lastMove().getEndIdx() != (i * 8 + j)) {
                             square(squareWidth * j, squareWidth * i, squareWidth);
                         }else{
                             image(spotLightSprite, squareWidth * j, squareWidth * i);
@@ -185,7 +185,7 @@ public class Sketch extends PApplet {
                 for (int i = 0; i < 8; i++) {
                     for (int j = 0; j < 8; j++) {
                         int piece = currentBoard[i * 8 + j];
-                        if (Math.abs(piece) != 6 && board.pastMoves.peek().getEndIdx() != (i * 8 + j)) {
+                        if (Math.abs(piece) != 6 && board.lastMove().getEndIdx() != (i * 8 + j)) {
                             square(squareWidth * j, squareWidth * i, squareWidth);
                         }else{
                             image(spotLightSprite, squareWidth * j, squareWidth * i);

@@ -364,6 +364,10 @@ public class Board {
         return possibleMoves.contains(move); // STUB
     }
 
+    public Move lastMove () {
+        return pastMoves.peek();
+    }
+
     public static int row(int idx) {
         return idx / 8;
     }
