@@ -1,6 +1,8 @@
 import processing.core.PApplet;
+import processing.core.PGraphics;
 import processing.core.PImage;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedList;
 
@@ -14,6 +16,7 @@ public class Sketch extends PApplet {
 
     private boolean promoting;
     private Move promoteMove;
+    private PImage spotLightSprite;
 
     private int selectedSquare;
     private HashMap<Integer, Move> possibleMoves;
@@ -60,6 +63,7 @@ public class Sketch extends PApplet {
                 default:
                     yield "";
             };
+            spotLightSprite = loadImage("sprites/fancy/spotlight.png");
             whitePieces[i - 1] = loadImage("sprites/ChessPiecesv2/White/white" + piece + "_v2.png");
             blackPieces[i - 1] = loadImage("sprites/ChessPiecesv2/Black/black" + piece + "_v2.png");
             float r = random(0, 1);
@@ -150,15 +154,63 @@ public class Sketch extends PApplet {
     @Override
     public void draw () {
         drawBoard();
+        if (board.numActualMoves %2 == 1){
+            //board.makeMove(board.bestNextMove());
+        }
         switch (board.getGameState()) {
             case Board.WHITEWINS -> {
                 // white mated black
+                float squareWidth = width / 8f;
+                int[] currentBoard = board.pieces;
+                fill(0, 205);
+                noStroke();
+                for (int i = 0; i < 8; i++) {
+                    for (int j = 0; j < 8; j++) {
+                        int piece = currentBoard[i * 8 + j];
+                        if (Math.abs(piece) != 6 && board.pastMoves.peek().getEndIdx() != (i * 8 + j)) {
+                            square(squareWidth * j, squareWidth * i, squareWidth);
+                        }else{
+                            image(spotLightSprite, squareWidth * j, squareWidth * i);
+                        }
+                    }
+                }
+                String wTitle = "VICTORY";
             }
             case Board.BLACKWINS -> {
                 // black mated white
+                float squareWidth = width / 8f;
+                int[] currentBoard = board.pieces;
+                fill(0, 205);
+                noStroke();
+                for (int i = 0; i < 8; i++) {
+                    for (int j = 0; j < 8; j++) {
+                        int piece = currentBoard[i * 8 + j];
+                        if (Math.abs(piece) != 6 && board.pastMoves.peek().getEndIdx() != (i * 8 + j)) {
+                            square(squareWidth * j, squareWidth * i, squareWidth);
+                        }else{
+                            image(spotLightSprite, squareWidth * j, squareWidth * i);
+                        }
+                    }
+                }
+                String lTitle = "DEFEAT";
             }
             case Board.DRAW -> {
                 // Perfect chess is always a draw
+                float squareWidth = width / 8f;
+                int[] currentBoard = board.pieces;
+                fill(0, 205);
+                noStroke();
+                for (int i = 0; i < 8; i++) {
+                    for (int j = 0; j < 8; j++) {
+                        int piece = currentBoard[i * 8 + j];
+                        if (Math.abs(piece) != 6) {
+                            square(squareWidth * j, squareWidth * i, squareWidth);
+                        }else{
+                            image(spotLightSprite, squareWidth * j, squareWidth * i);
+                        }
+                    }
+                }
+                String dTitle = "DRAW";
             }
         }
 
@@ -184,8 +236,10 @@ public class Sketch extends PApplet {
 
             if (!promoting)
                 board.makeMove(m);
+            selectedSquare = -1;
+        }else{
+            selectedSquare = row*8 + col;
         }
-        selectedSquare = row*8 + col;
     }
 
     @Override
