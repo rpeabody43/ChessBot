@@ -245,9 +245,6 @@ public class Board {
         else if (pieces[end] == -K) blackKing = end;
         pieces[start] = 0;
 
-        if(pieces[whiteKing]==0) pieces[whiteKing]=K;
-        if(pieces[blackKing]==0) pieces[blackKing]=-K;
-
         if (m.getPromoteTo() != 0) {
             pieces[end] = m.getPromoteTo();
         }
@@ -429,17 +426,22 @@ public class Board {
 
         for (int change = start * dir; Math.abs(change) <= Math.abs(end); change += dir) {
             int p = pieces[idx + change];
+            int capturedPiece;
             if (change == 8 || change == -8) { // Straight up/down
-                if (p == 0) {
-                    if (row(idx + change) == 0 || row(idx + change) == 7) // Promoting
-                        for (int i = N; i <= Q; i++)
-                            addPossibleMove(ret, idx, idx + change, 0, i*color);
-                    else
-                        addPossibleMove(ret, idx, idx + change, 0);
-                }
+                if (p != 0) continue;
+                else capturedPiece = 0;
             } else {
                 if (p * color < 0) // If different colors
-                    addPossibleMove(ret, idx, idx + change, p);
+
+                    capturedPiece = p;
+                else continue;
+            }
+            if (row(idx + change) == 0 || row(idx + change) == 7) { // Promoting
+                for (int i = N; i <= Q; i++)
+                    addPossibleMove(ret, idx, idx + change, capturedPiece, i * color);
+            }
+            else {
+                addPossibleMove(ret, idx, idx + change, capturedPiece);
             }
         }
 
@@ -764,6 +766,7 @@ public class Board {
         if (lastMove.getPromoteTo()!=0){
             pieces[start]=P*color;
         }
+        //castle
         if(Math.abs(pieces[start])==K && Math.abs(end-start)==2){
             pieces[start+(end-start)/2]=0;
             pieces[end+((end-start)<0 ? -2 : 1)] = R*color;
