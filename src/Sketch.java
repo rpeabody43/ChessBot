@@ -154,9 +154,6 @@ public class Sketch extends PApplet {
     @Override
     public void draw () {
         drawBoard();
-        if (board.numActualMoves %2 == 1){
-            //board.makeMove(board.bestNextMove());
-        }
         switch (board.getGameState()) {
             case Board.WHITEWINS -> {
                 // white mated black
@@ -215,7 +212,9 @@ public class Sketch extends PApplet {
         }
 
         if(board.blackToMove()) {
-            board.makeMove(ai.bestNextMove());
+            Move nextMove = ai.bestNextMove();
+            board.makeMove(nextMove);
+            selectedSquare = nextMove.getEndIdx();
         }
     }
 
@@ -238,7 +237,7 @@ public class Sketch extends PApplet {
                 board.makeMove(m);
             selectedSquare = -1;
         }else{
-            selectedSquare = row*8 + col;
+            selectedSquare = selectedSquare==row*8+col ? -1 : row*8 + col;
         }
     }
 
