@@ -770,8 +770,6 @@ public class Board {
                 possibleMoves.addAll(movesAtIdx);
             }
         }
-        System.out.println(kingMoved[1]);
-        System.out.println(rookMoved[3]);
     }
     public void undoMove(){
         Move lastMove = pastMoves.pop();
