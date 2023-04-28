@@ -213,8 +213,10 @@ public class Sketch extends PApplet {
 
         if(board.blackToMove()) {
             Move nextMove = ai.bestNextMove();
-            board.makeMove(nextMove);
-            selectedSquare = nextMove.getEndIdx();
+            if (nextMove != null) {
+                board.makeMove(nextMove);
+                selectedSquare = nextMove.getEndIdx();
+            }
         }
     }
 

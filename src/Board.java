@@ -818,8 +818,8 @@ public class Board {
                 case 63 -> 3;
                 default -> -1;
             };
-            if (i > -1)
-                rookMoved[i]= !lastMove.isFirstMove();
+            if (i > -1 && lastMove.isFirstMove())
+                rookMoved[i] = false;
         }
         //king moved
         if(startPieceType==K){
