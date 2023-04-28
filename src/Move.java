@@ -1,7 +1,10 @@
 public class Move {
-    private int start; // index in 1d array
-    private int end;
-    private int capturedPiece;
+    private final int start; // index in 1d array
+    private final int end;
+    private final int capturedPiece;
+
+
+    private final boolean firstMove;
     private int promoteTo;
 
     public Move (int start, int end, int capturedPiece) {
@@ -9,6 +12,7 @@ public class Move {
         this.end = end;
         this.capturedPiece = capturedPiece;
         this.promoteTo = 0;
+        this.firstMove = false;
     }
 
     public Move (int start, int end, int capturedPiece, int promoteTo) {
@@ -16,6 +20,15 @@ public class Move {
         this.end = end;
         this.capturedPiece = capturedPiece;
         this.promoteTo = promoteTo;
+        this.firstMove = false;
+    }
+
+    public Move (int start, int end, int capturedPiece, boolean firstMove) {
+        this.start = start;
+        this.end = end;
+        this.capturedPiece = capturedPiece;
+        this.promoteTo = 0;
+        this.firstMove = firstMove;
     }
 
     // returns which piece was captured
@@ -37,6 +50,10 @@ public class Move {
 
     public void setPromoteTo (int promoteTo) {
         this.promoteTo = promoteTo;
+    }
+
+    public boolean isFirstMove() {
+        return firstMove;
     }
 
     @Override

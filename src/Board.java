@@ -208,34 +208,23 @@ public class Board {
 
         int endPiece = pieces[end];
 
-        // TODO : What is this
-        // Make it a bunch of things like: rookMoved[0] = (end==0) || (start==0)
-        if (end == 0) rookMoved[0] = true;
-        else if (end == 7) rookMoved[1] = true;
-        else if (end == 55) rookMoved[2] = true;
-        else if (end == 63) rookMoved[3] = true;
-
-        if (start == 0) rookMoved[0] = true;
-        else if (start == 7) rookMoved[1] = true;
-        else if (start == 55) rookMoved[2] = true;
-        else if (start == 63) rookMoved[3] = true;
-
-        if (start == 4) kingMoved[0] = true;
-        else if (start == 60) rookMoved[1] = true;
-
         if ((start == 4 || start == 60) && Math.abs(pieces[start])==K) {
             if (end == 2) {
                 pieces[0] = 0;
                 pieces[3] = -R;
+                rookMoved[0] = true;
             } else if (end == 6) {
                 pieces[7] = 0;
                 pieces[5] = -R;
+                rookMoved[1] = true;
             } else if (end == 58) {
                 pieces[56] = 0;
                 pieces[59] = R;
+                rookMoved[2] = true;
             } else if (end == 62) {
                 pieces[63] = 0;
                 pieces[61] = R;
+                rookMoved[3] = true;
             }
 
         }
@@ -274,6 +263,32 @@ public class Board {
 
 
         int p = pieces[end];
+
+        if (Math.abs(p) == R && m.isFirstMove()) {
+            int i = switch (start) {
+                case 0 -> 0;
+                case 7 -> 1;
+                case 56 -> 2;
+                case 63 -> 3;
+                default -> -1;
+            };
+            rookMoved[i] = true;
+        }
+        else if (Math.abs(endPiece) == R) {
+            int i = switch (end) {
+                case 0 -> 0;
+                case 7 -> 1;
+                case 56 -> 2;
+                case 63 -> 3;
+                default -> -1;
+            };
+            if (i > -1)
+                rookMoved[i] = true;
+        }
+
+        if (start == 4) kingMoved[0] = true;
+        else if (start == 60) rookMoved[1] = true;
+
         updatePossibleMoves();
         //System.out.println(possibleMoves.size());
 
@@ -399,6 +414,12 @@ public class Board {
         moveList.add(m);
     }
 
+    private void addPossibleMove (LinkedList<Move> moveList, int start, int end, int capturedPiece, boolean firstMove) {
+        if (possibleBlocks.size() > 0 && !possibleBlocks.contains(end)) return;
+        Move m = new Move(start, end, capturedPiece, firstMove);
+        moveList.add(m);
+    }
+
     private LinkedList<Move> getPawnMoves(int idx) {
         LinkedList<Move> ret = new LinkedList<>();
 
@@ -512,14 +533,23 @@ public class Board {
         return ret;
     }
 
-    private LinkedList<Move> getRookMoves(int idx) { //do a castle check
+    private LinkedList<Move> getRookMoves(int idx) {
         LinkedList<Move> ret = new LinkedList<>();
+        int rookStart = switch (idx) {
+            case 0 -> 0;
+            case 7 -> 1;
+            case 56 -> 2;
+            case 63 -> 3;
+            default -> -1;
+        };
+
+        boolean firstMove = rookStart > -1 && !rookMoved[rookStart];
 
         //this probably doesn't work but replit doesn't show red squiggly lines !!
         for (int i = 0; i < 4; i++) {
             for (int newIdx : StraightIterator.iter(idx, i)) {
                 if (pieces[newIdx] * pieces[idx] <= 0) {
-                    addPossibleMove(ret, idx, newIdx, pieces[newIdx]);
+                    addPossibleMove(ret, idx, newIdx, pieces[newIdx], firstMove);
 
                     if (pieces[newIdx] * pieces[idx] < 0) break;
                 } else {
@@ -658,6 +688,9 @@ public class Board {
         int color = (pieces[idx] > 0) ? 1 : -1;
         int[] idxChange = {-9, -8, -7, -1, 1, 7, 8, 9};
         int[] rizzChange = {-1, 0, 1, -1, 1, -1, 0, 1}; // hoRIZZontal change
+
+        int kingIdx = color == -1 ? 0 : 1;
+
         if (Math.abs(pieces[idx]) == Math.abs(K)) {
             int row = row(idx);
             int col = column(idx);
@@ -666,7 +699,7 @@ public class Board {
                     if (rizzChange[i] + col < 8 && rizzChange[i] + col > -1) {
                         if (pieces[idx + idxChange[i]] * pieces[idx] <= 0) {
                             if (tileSafe(idx+idxChange[i], color))
-                                ret.add(new Move(idx, idx + idxChange[i], pieces[idx + idxChange[i]]));
+                                ret.add(new Move(idx, idx + idxChange[i], pieces[idx + idxChange[i]], !kingMoved[kingIdx]));
                         }
                     }
                 }
@@ -675,24 +708,24 @@ public class Board {
             if (pieces[idx] > 0 && kingMoved[1] == false) {
                 if (rookMoved[3] == false && pieces[61] == 0 && pieces[62] == 0){
                     if(tileSafe(60,1) && tileSafe(61,1) && tileSafe(62,1))
-                        ret.add(new Move(60, 62, 0));
+                        ret.add(new Move(60, 62, 0, true));
                 }
 
 
                 if (rookMoved[2] == false && pieces[59] == 0 && pieces[58] == 0 && pieces[57] == 0){
                     if(tileSafe(60,1) && tileSafe(59,1) && tileSafe(58,1))
-                        ret.add(new Move(60, 58, 0));
+                        ret.add(new Move(60, 58, 0, true));
                 }
 
 
             } else if (pieces[idx] < 0 && kingMoved[0] == false) {
                 if (rookMoved[1] == false && pieces[5] == 0 && pieces[6] == 0){
                     if(tileSafe(4,-1) && tileSafe(5,-1) && tileSafe(6,-1))
-                        ret.add(new Move(4, 6, 0));
+                        ret.add(new Move(4, 6, 0, true));
                 }
                 if (rookMoved[0] == false && pieces[1] == 0 && pieces[2] == 0 && pieces[3] == 0){
                     if(tileSafe(2,-1) && tileSafe(3,-1) && tileSafe(4,-1))
-                        ret.add(new Move(4, 2, 0));
+                        ret.add(new Move(4, 2, 0, true));
                 }
             }
         }
@@ -737,6 +770,8 @@ public class Board {
                 possibleMoves.addAll(movesAtIdx);
             }
         }
+        System.out.println(kingMoved[1]);
+        System.out.println(rookMoved[3]);
     }
     public void undoMove(){
         Move lastMove = pastMoves.pop();
@@ -766,23 +801,31 @@ public class Board {
         if (lastMove.getPromoteTo()!=0){
             pieces[start]=P*color;
         }
+
+        int startPieceType = Math.abs(pieces[start]);
+
         //castle
-        if(Math.abs(pieces[start])==K && Math.abs(end-start)==2){
+        if(startPieceType==K && Math.abs(end-start)==2){
             pieces[start+(end-start)/2]=0;
             pieces[end+((end-start)<0 ? -2 : 1)] = R*color;
             kingMoved[color==-1?0:1]=false;
             rookMoved[end==2?0 : end==6?1 : end==62?3:2]=false;
         }
         // rook moved
-        if(Math.abs(pieces[start])==R && (start==0||start==7||start==55||start==63)){
-            rookMoved[start==0 ? 0 : start==7 ? 1 : start==55 ? 2 : 3]=false;
-        }
-        if(Math.abs(pieces[end])==R && (end==0||end==7||end==55||end==63)){
-            rookMoved[start==0 ? 0 : start==7 ? 1 : start==55 ? 2 : 3]=false;
+        if(startPieceType==R){
+            int i = switch (start) {
+                case 0 -> 0;
+                case 7 -> 1;
+                case 56 -> 2;
+                case 63 -> 3;
+                default -> -1;
+            };
+            if (i > -1)
+                rookMoved[i]= !lastMove.isFirstMove();
         }
         //king moved
-        if(Math.abs(pieces[start])==K && (start==4||start==60)){
-            kingMoved[start==4 ? 0 : 1] = false;
+        if(startPieceType==K){
+            kingMoved[pieces[start] == -K ? 0 : 1] = !lastMove.isFirstMove();
         }
 
         numActualMoves--;
