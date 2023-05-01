@@ -238,6 +238,9 @@ public class Sketch extends PApplet {
             if (!promoting)
                 board.makeMove(m);
             selectedSquare = -1;
+
+            // show the move without waiting for the bot
+            drawBoard();
         }else{
             selectedSquare = selectedSquare==row*8+col ? -1 : row*8 + col;
         }
