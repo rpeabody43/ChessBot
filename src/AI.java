@@ -66,12 +66,11 @@ public class AI {
 
         for(Move m : possibleMoves){
             int eval = evalMove(m, 3, -1000000000, 1000000000);
-            System.out.println("eval: "+eval);
+            System.out.println("eval: "+eval + ", possible moves: " + possibleMoves.size());
             if(eval*color>bestEval || m == null) {
                 bestMove = m;
                 bestEval = eval*color;
             }
-            System.out.println(possibleMoves.size());
         }
         return bestMove;
     }

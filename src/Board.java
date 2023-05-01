@@ -155,7 +155,7 @@ public class Board {
         int attackingPiece = Math.abs(pieces[attackingIdx]);
         // A queen functionally becomes a bishop/rook here
         if (attackingPiece == Q)
-            attackingPiece = numSquaresHorz == 0 ? R : B;
+            attackingPiece = numSquaresHorz == 0 || numSquaresVert == 0 ? R : B;
         if (attackingPiece == N || attackingPiece == P) {
             // Knights/Pawns can only be "blocked" by being captured
             return ret;
@@ -179,10 +179,10 @@ public class Board {
         if (attackingPiece == R) {
             int direction;
             if (numSquaresVert == 0) {
-                direction = delta > 0 ? 1 : -1;
+                direction = delta > 0 ? 2 : 0;
             }
             else {
-                direction = delta > 0 ? 8 : -8;
+                direction = delta > 0 ? 3 : 1;
             }
 
             for (int idx : StraightIterator.iter(kingIdx, direction)) {
@@ -245,7 +245,6 @@ public class Board {
         int kingIdx = whiteToMove() ? whiteKing : blackKing;
         int kingColor = whiteToMove() ? 1 : -1;
         ArrayList<Integer> checkingPieces = piecesAttackingTile(kingIdx, kingColor);
-//        System.out.println(checkingPieces.size());
         whiteInCheck = false;
         blackInCheck = false;
         possibleBlocks.clear();
@@ -272,6 +271,8 @@ public class Board {
                 case 63 -> 3;
                 default -> -1;
             };
+            if (i == -1)
+                System.out.println(start);
             rookMoved[i] = true;
         }
         else if (Math.abs(endPiece) == R) {
@@ -287,10 +288,9 @@ public class Board {
         }
 
         if (start == 4) kingMoved[0] = true;
-        else if (start == 60) rookMoved[1] = true;
+        else if (start == 60) kingMoved[1] = true;
 
         updatePossibleMoves();
-        //System.out.println(possibleMoves.size());
 
         if (Math.abs(p) == P) {
             int delta = Math.abs(start - end);
@@ -330,15 +330,15 @@ public class Board {
             }
         }
 
-
         gameState = getGameState();
-        String s = switch (gameState) {
-            case PLAYING -> "Playing";
-            case DRAW -> "Draw";
-            case WHITEWINS -> "White Wins";
-            case BLACKWINS -> "Black Wins";
-            default -> "Unknown game state" + gameState;
-        };
+
+//        String s = switch (gameState) {
+//            case PLAYING -> "Playing";
+//            case DRAW -> "Draw";
+//            case WHITEWINS -> "White Wins";
+//            case BLACKWINS -> "Black Wins";
+//            default -> "Unknown game state: " + gameState;
+//        };
         //System.out.println(s);
 
     }
@@ -367,6 +367,9 @@ public class Board {
             boolean blackInsufficient = (blackPieceValue <= K + B && blackPieceValue != K + P);
             if (whiteInsufficient && blackInsufficient) return DRAW;
         }
+
+        // TODO fix this with undoMove
+//        if (movesWithoutCap >= 50) return DRAW;
 
         return PLAYING;
     }
@@ -411,13 +414,19 @@ public class Board {
         // If in check and this move doesn't block, don't add the move
         if (possibleBlocks.size() > 0 && !possibleBlocks.contains(end)) return;
         Move m = new Move(start, end, capturedPiece);
-        moveList.add(m);
+        if (capturedPiece > 0)
+            moveList.push(m);
+        else
+            moveList.add(m);
     }
 
     private void addPossibleMove (LinkedList<Move> moveList, int start, int end, int capturedPiece, boolean firstMove) {
         if (possibleBlocks.size() > 0 && !possibleBlocks.contains(end)) return;
         Move m = new Move(start, end, capturedPiece, firstMove);
-        moveList.add(m);
+        if (capturedPiece > 0)
+            moveList.push(m);
+        else
+            moveList.add(m);
     }
 
     private LinkedList<Move> getPawnMoves(int idx) {
@@ -494,28 +503,17 @@ public class Board {
 
     private LinkedList<Move> getKnightMoves(int idx) {
         LinkedList<Move> ret = new LinkedList<>();
-
-        int[] idxChange = {-17, -15, -10, -6, 6, 10, 15, 17};
-        int[] hozChange = {-1, 1, -2, 2, -2, 2, -1, 1};
         if (Math.abs(pieces[idx]) == Math.abs(N)) {
-
-            int column = column(idx);
 
             for (int newIdx : KnightIterator.iter(idx))
                 if (pieces[newIdx] * pieces[idx] <= 0)
                     addPossibleMove(ret, idx, newIdx, pieces[newIdx]);
-//            for (int i = 0; i < idxChange.length; i++) {
-//                if (idx + idxChange[i] > -1 && idx + idxChange[i] < pieces.length) {
-//                    if (hozChange[i] + column < 8 && hozChange[i] + column > -1)
-//                }
-//            }
         }
         return ret;
     }
 
     private LinkedList<Move> getBishopMoves(int idx) {
         LinkedList<Move> ret = new LinkedList<>();
-        int color = (pieces[idx] > 0) ? 1 : -1;
 
         for (int i = 0; i <= 3; i++) {
             for (int newIdx : DiagIterator.iter(idx, i)) {
@@ -771,7 +769,7 @@ public class Board {
             }
         }
     }
-    public void undoMove(){
+    public void undoMove() {
         Move lastMove = pastMoves.pop();
         int start = lastMove.getStartIdx();
         int end = lastMove.getEndIdx();
@@ -793,7 +791,7 @@ public class Board {
         if (Math.abs(movedPiece) == P && capturedPiece == 0) {
             int delta = end - start;
             if (Math.abs(delta) % 8 != 0) 
-                pieces[(delta == -9*color) ? start-1*color : start+1*color] = P * -color;
+                pieces[(delta == -9*color) ? start-color : start+color] = P * -color;
         }   
         // promotion, if this is bugged then it's because I'm getting an infusion and im writing this on my phone
         if (lastMove.getPromoteTo()!=0){
@@ -831,4 +829,14 @@ public class Board {
         //potentially other things
 
     }
+
+    public void printPastMoves () {
+        String out = "";
+        for (Move m : pastMoves) {
+            out += m + "\n";
+        }
+        out = out.substring(0, out.length()-1);
+        System.out.println(out);
+    }
+
 }
