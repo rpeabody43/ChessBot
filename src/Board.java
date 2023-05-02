@@ -88,14 +88,18 @@ public class Board {
         gameState = PLAYING;
     }
 
-    private int tileAttackedByPiece(int color, int attackingPiece, Iterable<Integer> iter) {
+    private int tileAttackedByPiece(int color, int attackingPiece, int start, Iterable<Integer> iter) {
         for (int newIdx : iter) {
             int p = pieces[newIdx];
             if (p == 0) continue;
 
             // queen is essentially a bishop and rook
             boolean queenMove = attackingPiece == B || attackingPiece == R;
-            boolean attacked = p == -color * attackingPiece || (queenMove && p == -color*Q);
+            // king is a queen that can only move one square
+            boolean kingMove = queenMove && Math.abs(newIdx - start) <= 9;
+            boolean attacked = p == -color * attackingPiece
+                    || (queenMove && p == -color*Q)
+                    || (kingMove && p == -color*K);
             if (attacked) return newIdx;
             // Knight is the only one that can't end early
             else if (attackingPiece != N) return -1;
@@ -108,19 +112,19 @@ public class Board {
 
         for (int i = 0; i < 4; i++) {
             // BISHOP MOVES
-            int bishopMove = tileAttackedByPiece(color, B, DiagIterator.iter(idx, i));
+            int bishopMove = tileAttackedByPiece(color, B, idx, DiagIterator.iter(idx, i));
             if (bishopMove > -1) {
                 attackingPieces.add(bishopMove);
             }
 
             // ROOK MOVES
-            int rookMove = tileAttackedByPiece(color, R, StraightIterator.iter(idx, i));
+            int rookMove = tileAttackedByPiece(color, R, idx, StraightIterator.iter(idx, i));
             if (rookMove > -1) {
                 attackingPieces.add(rookMove);
             }
         }
         // KNIGHT MOVES
-        int knightMove = tileAttackedByPiece(color, N, KnightIterator.iter(idx));
+        int knightMove = tileAttackedByPiece(color, N, idx, KnightIterator.iter(idx));
         if (knightMove > -1) {
             // This will only add one knight per square,
             // but I don't think that will be a problem functionally
@@ -130,7 +134,7 @@ public class Board {
         // PAWN MOVES
         int[] pawnDeltas = {9, 7}; // Handle up/down on color
         for (int delta : pawnDeltas) {
-            int newIdx = idx + delta;
+            int newIdx = idx + -color*delta;
             if (newIdx >= pieces.length || newIdx < 0) continue;
             int newCol = column(newIdx);
             if (Math.abs(newCol - column(idx)) == 7) continue;

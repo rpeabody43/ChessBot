@@ -10,23 +10,28 @@ public class AI {
     }
 
     public int evaluateCurrentPos(){
+        int gameState = board.getGameState();
+        // Looking for checkmate
+        if (gameState == Board.BLACKWINS) return -1000000;
+        else if (gameState == Board.WHITEWINS) return 1000000;
+
         int[] pieces = board.pieces;
 
         int eval = 0;
-        for(int i =0; i< pieces.length; i++) {
-            int color = pieces[i]>0?1:pieces[i]<0?-1:0;
-            int materialVal = switch(Math.abs(pieces[i])){
+        for (int piece : pieces) {
+            int color = piece > 0 ? 1 : piece < 0 ? -1 : 0;
+            int materialVal = switch (Math.abs(piece)) {
                 case Board.P -> 100;
-                case Board.N -> 300;
-                case Board.B -> 300;
-                case Board.Q -> 900;
+                case Board.N, Board.B -> 300;
                 case Board.R -> 500;
+                case Board.Q -> 900;
                 case Board.K -> 1000000;
                 default -> 0;
             };
             // positional code
-            int positionalVal = 0;
-            eval+=color*(materialVal+positionalVal);
+//            int positionalVal = 0;
+
+            eval += color * materialVal;
         }
         return eval;
     }
@@ -58,7 +63,9 @@ public class AI {
     }
 
 
-    public Move bestNextMove(){
+    public Move bestNextMove() {
+        long startTime = System.currentTimeMillis();
+
         List<Move> possibleMoves = new LinkedList<>(board.getPossibleMoves());
         int color = board.whiteToMove() ? 1 : -1;
         Move bestMove = null;
@@ -66,13 +73,18 @@ public class AI {
 
         for(Move m : possibleMoves){
             int eval = evalMove(m, 3, -1000000000, 1000000000);
-            System.out.println("eval: "+eval + ", possible moves: " + possibleMoves.size());
+//            System.out.println("eval: "+eval + ", possible moves: " + possibleMoves.size());
             if(eval*color>bestEval || m == null) {
                 bestMove = m;
                 bestEval = eval*color;
             }
         }
+
+        double totalTimeSeconds = (System.currentTimeMillis() - startTime) / 1000.0;
+        System.out.println(totalTimeSeconds + "s");
+
         return bestMove;
+
     }
 
 }
