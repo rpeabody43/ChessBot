@@ -39,6 +39,7 @@ public class Board {
 
     int numActualMoves;
     int[] pieces;
+
     boolean[] kingMoved;
 
     HashSet<Integer> pinnedPieces;
@@ -97,9 +98,12 @@ public class Board {
             boolean queenMove = attackingPiece == B || attackingPiece == R;
             // king is a queen that can only move one square
             boolean kingMove = queenMove && Math.abs(newIdx - start) <= 9;
+            // pawn is a bishop that can only move one square
+            boolean pawnMove = attackingPiece == B && Math.abs(newIdx - start) <= 9;
             boolean attacked = p == -color * attackingPiece
                     || (queenMove && p == -color*Q)
-                    || (kingMove && p == -color*K);
+                    || (kingMove && p == -color*K)
+                    || (pawnMove && p == -color*P);
             if (attacked) return newIdx;
             // Knight is the only one that can't end early
             else if (attackingPiece != N) return -1;
@@ -129,16 +133,6 @@ public class Board {
             // This will only add one knight per square,
             // but I don't think that will be a problem functionally
             attackingPieces.add(knightMove);
-        }
-
-        // PAWN MOVES
-        int[] pawnDeltas = {9, 7}; // Handle up/down on color
-        for (int delta : pawnDeltas) {
-            int newIdx = idx + -color*delta;
-            if (newIdx >= pieces.length || newIdx < 0) continue;
-            int newCol = column(newIdx);
-            if (Math.abs(newCol - column(idx)) == 7) continue;
-            if (pieces[newIdx] == -color * P) attackingPieces.add(newIdx);
         }
 
         return attackingPieces;
@@ -206,6 +200,110 @@ public class Board {
         return (numActualMoves % 2 == 1);
     }
 
+    private void updateChecks(int start, int end) {
+        int endPiece = pieces[end];
+
+        int kingIdx = whiteToMove() ? whiteKing : blackKing;
+        int kingColor = whiteToMove() ? 1 : -1;
+        ArrayList<Integer> checkingPieces = new ArrayList<>();
+
+        // Based on direction check if it's being attacked directly
+        // Also check in its direction for a discover check
+        int deltaEnd = end - kingIdx;
+        // Rook check
+        if (Math.abs(endPiece) == R || Math.abs(endPiece) == Q) {
+            boolean vert = deltaEnd % 8 == 0;
+            boolean horz = row(end) == row(kingIdx);
+            int i = -1;
+            if (vert)
+                i = deltaEnd > 0 ? 3 : 1;
+            else if (horz)
+                i = deltaEnd > 0 ? 2 : 0;
+
+            if (i > -1) {
+                Iterable<Integer> iter = StraightIterator.iter(kingIdx, i);
+                if (tileAttackedByPiece(kingColor, R, kingIdx, iter) >= 0)
+                    checkingPieces.add(end);
+            }
+        }
+        // Bishop check
+        if (Math.abs(endPiece) == B || Math.abs(endPiece) == P || Math.abs(endPiece) == Q) {
+            int rowDelta = row(end) - row(kingIdx);
+            int colDelta = column(end) - column(kingIdx);
+
+            boolean onFirstDiag = rowDelta == colDelta;
+            boolean onOtherDiag = rowDelta == -colDelta;
+
+            int i = -1;
+            if (onFirstDiag)
+                i = deltaEnd > 0 ? 3 : 0;
+            else if (onOtherDiag)
+                i = deltaEnd > 0 ? 2 : 1;
+
+
+            if (i > -1) {
+                Iterable<Integer> iter = DiagIterator.iter(kingIdx, i);
+                if (tileAttackedByPiece(kingColor, B, kingIdx, iter) >= 0)
+                    checkingPieces.add(end);
+            }
+        }
+        // Knight check
+        else if (Math.abs(endPiece) == N) {
+            int[] knightDeltas = {6, 10, 15, 17};
+            for (int d : knightDeltas) {
+                if (d == Math.abs(deltaEnd)) {
+                    checkingPieces.add(end);
+                    break;
+                }
+            }
+        }
+
+        int deltaStart = start - kingIdx;
+        int i = -1;
+
+        // Rook discover
+        if (deltaStart % 8 == 0)
+            i = deltaStart > 0 ? 3 : 1;
+        else if (row(start) == row(kingIdx))
+            i = deltaStart > 0 ? 2 : 0;
+        if (i > -1) {
+            Iterable<Integer> iter = StraightIterator.iter(kingIdx, i);
+            int discoverAttack = tileAttackedByPiece(kingColor, R, kingIdx, iter);
+            if (discoverAttack > -1)
+                checkingPieces.add(discoverAttack);
+        }
+
+        // Bishop discover
+        i = -1;
+        int rowDelta = row(start) - row(kingIdx);
+        int colDelta = column(start) - column(kingIdx);
+        if (rowDelta == colDelta)
+            i = deltaEnd > 0 ? 3 : 0;
+        else if (rowDelta == -colDelta)
+            i = deltaEnd > 0 ? 2 : 1;
+
+        if (i > -1) {
+            Iterable<Integer> iter = DiagIterator.iter(kingIdx, i);
+            int discoverAttack = tileAttackedByPiece(kingColor, B, kingIdx, iter);
+            if (discoverAttack > -1)
+                checkingPieces.add(discoverAttack);
+        }
+
+        whiteInCheck = false;
+        blackInCheck = false;
+        possibleBlocks.clear();
+        if (checkingPieces.size() > 0) {
+            if (whiteToMove())
+                whiteInCheck = true;
+            else
+                blackInCheck = true;
+
+            // Blocks are only possible if one piece is attacking
+            if (checkingPieces.size() == 1)
+                possibleBlocks = blockIdxs(kingIdx, checkingPieces.get(0));
+        }
+    }
+
     public void makeMove(Move m) {
         int start = m.getStartIdx();
         int end = m.getEndIdx();
@@ -246,24 +344,8 @@ public class Board {
         possibleMoves.clear();
         numActualMoves++;
 
-        int kingIdx = whiteToMove() ? whiteKing : blackKing;
-        int kingColor = whiteToMove() ? 1 : -1;
-        ArrayList<Integer> checkingPieces = piecesAttackingTile(kingIdx, kingColor);
-        whiteInCheck = false;
-        blackInCheck = false;
-        possibleBlocks.clear();
-        if (checkingPieces.size() > 0) {
-            if (whiteToMove())
-                whiteInCheck = true;
-            else
-                blackInCheck = true;
-
-            // Blocks are only possible if one piece is attacking
-            if (checkingPieces.size() == 1)
-                possibleBlocks = blockIdxs(kingIdx, checkingPieces.get(0));
-        }
-        //System.out.println("white king in check: " + whiteInCheck + " black king in check: " + blackInCheck);
-
+        updateChecks(start, end);
+//        System.out.println("white king in check: " + whiteInCheck + " black king in check: " + blackInCheck);
 
         int p = pieces[end];
 
@@ -753,7 +835,6 @@ public class Board {
         for (int i = 0; i < pieces.length; i++) {
             if(pinnedPieces.containsKey(i)){
                 possibleMoves.addAll(addPinnedPieceMoves(i));
-//                System.out.println(addPinnedPieceMoves((i)));
                 continue;
             }
             int piece = pieces[i];
