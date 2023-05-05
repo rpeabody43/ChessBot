@@ -29,7 +29,7 @@ public class Sketch extends PApplet {
 
     public Sketch() {
         this.board = new Board();
-        this.ai = new AI(board);
+        this.ai = new AI(board, 3);
         this.selectedSquare = -1;
         this.promoting = false;
     }
@@ -267,6 +267,7 @@ public class Sketch extends PApplet {
         // DEBUGGING PURPOSES
         if (key == 'z') {
             board.undoMove();
+            board.updatePossibleMoves();
         }
 
         if (key == 'p') {

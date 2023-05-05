@@ -2,11 +2,77 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class AI {
+    // region positional eval
+    final static int[][] positionalVals = {
+            { // Pawns
+                    0,  0,  0,  0,  0,  0,  0,  0,
+                    50, 50, 50, 50, 50, 50, 50, 50,
+                    10, 10, 20, 30, 30, 20, 10, 10,
+                    5,  5, 10, 25, 25, 10,  5,  5,
+                    0,  0,  0, 20, 20,  0,  0,  0,
+                    5, -5,-10,  0,  0,-10, -5,  5,
+                    5, 10, 10,-20,-20, 10, 10,  5,
+                    0,  0,  0,  0,  0,  0,  0,  0
+            },
+            { // Knights
+                    -50,-40,-30,-30,-30,-30,-40,-50,
+                    -40,-20,  0,  0,  0,  0,-20,-40,
+                    -30,  0, 10, 15, 15, 10,  0,-30,
+                    -30,  5, 15, 20, 20, 15,  5,-30,
+                    -30,  0, 15, 20, 20, 15,  0,-30,
+                    -30,  5, 10, 15, 15, 10,  5,-30,
+                    -40,-20,  0,  5,  5,  0,-20,-40,
+                    -50,-40,-30,-30,-30,-30,-40,-50,
+            },
+            { // Bishops
+                    -20,-10,-10,-10,-10,-10,-10,-20,
+                    -10,  0,  0,  0,  0,  0,  0,-10,
+                    -10,  0,  5, 10, 10,  5,  0,-10,
+                    -10,  5,  5, 10, 10,  5,  5,-10,
+                    -10,  0, 10, 10, 10, 10,  0,-10,
+                    -10, 10, 10, 10, 10, 10, 10,-10,
+                    -10,  5,  0,  0,  0,  0,  5,-10,
+                    -20,-10,-10,-10,-10,-10,-10,-20,
+            },
+            { // Rooks
+                    0,  0,  0,  0,  0,  0,  0,  0,
+                    5, 10, 10, 10, 10, 10, 10,  5,
+                    -5,  0,  0,  0,  0,  0,  0, -5,
+                    -5,  0,  0,  0,  0,  0,  0, -5,
+                    -5,  0,  0,  0,  0,  0,  0, -5,
+                    -5,  0,  0,  0,  0,  0,  0, -5,
+                    -5,  0,  0,  0,  0,  0,  0, -5,
+                    0,  0,  0,  5,  5,  0,  0,  0
+            },
+            { // Queens
+                    -20,-10,-10, -5, -5,-10,-10,-20,
+                    -10,  0,  0,  0,  0,  0,  0,-10,
+                    -10,  0,  5,  5,  5,  5,  0,-10,
+                    -5,  0,  5,  5,  5,  5,  0, -5,
+                    0,  0,  5,  5,  5,  5,  0, -5,
+                    -10,  5,  5,  5,  5,  5,  0,-10,
+                    -10,  0,  5,  0,  0,  0,  0,-10,
+                    -20,-10,-10, -5, -5,-10,-10,-20
+            },
+            { // King
+                    -30,-40,-40,-50,-50,-40,-40,-30,
+                    -30,-40,-40,-50,-50,-40,-40,-30,
+                    -30,-40,-40,-50,-50,-40,-40,-30,
+                    -30,-40,-40,-50,-50,-40,-40,-30,
+                    -20,-30,-30,-40,-40,-30,-30,-20,
+                    -10,-20,-20,-20,-20,-20,-20,-10,
+                    20, 20,  0,  0,  0,  0, 20, 20,
+                    20, 30, 10,  0,  0, 10, 30, 20
+            }
+    };
+    //endregion
 
     private Board board;
+    private int depth;
 
-    public AI (Board board) {
+    public AI (Board board, int depth) {
         this.board = board;
+        this.depth = depth;
     }
 
     public int evaluateCurrentPos(){
@@ -18,7 +84,8 @@ public class AI {
         int[] pieces = board.pieces;
 
         int eval = 0;
-        for (int piece : pieces) {
+        for (int i = 0; i < pieces.length; i++) {
+            int piece = pieces[i];
             int color = piece > 0 ? 1 : piece < 0 ? -1 : 0;
             int materialVal = switch (Math.abs(piece)) {
                 case Board.P -> 100;
@@ -28,10 +95,15 @@ public class AI {
                 case Board.K -> 1000000;
                 default -> 0;
             };
-            // positional code
-//            int positionalVal = 0;
 
-            eval += color * materialVal;
+            // positional code
+            int positionalVal = 0;
+            if (piece != 0) {
+                int positionalIdx = color > 0 ? i : 7 * Board.column(i) + Board.row(i);
+                positionalVal = positionalVals[Math.abs(piece)-1][positionalIdx];
+            }
+
+            eval += color * (materialVal + positionalVal);
         }
         return eval;
     }
@@ -72,7 +144,7 @@ public class AI {
         int bestEval = -1000000000;
 
         for(Move m : possibleMoves){
-            int eval = evalMove(m, 3, -1000000000, 1000000000);
+            int eval = evalMove(m, depth, -1000000000, 1000000000);
 //            System.out.println("eval: "+eval + ", possible moves: " + possibleMoves.size());
             if(eval*color>bestEval || m == null) {
                 bestMove = m;
