@@ -221,7 +221,7 @@ public class Sketch extends PApplet {
     }
 
     @Override
-    public void mouseClicked() {
+    public void mousePressed () {
         if (promoting) return;
         int row = mouseY*8 / height;
         int col = mouseX*8 / width;
