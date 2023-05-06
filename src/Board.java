@@ -938,6 +938,7 @@ public class Board {
                     case K -> "K";
                     default -> "";
                 };
+                res+=strNotation(m.getStartIdx());
                 if(m.getCapturedPiece()!=0) res+="x";
                 res+=strNotation(m.getEndIdx())+" ";
             }
