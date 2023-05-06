@@ -374,6 +374,15 @@ public class Board {
             if (i > -1)
                 rookMoved[i] = true;
         }
+        else if (Math.abs(endPiece) == K) {
+            int i = switch (end) {
+                case 4 -> 0;
+                case 60 -> 1;
+                default -> -1;
+            };
+            if (i > -1)
+                kingMoved[i] = true;
+        }
 
         if (start == 4) kingMoved[0] = true;
         else if (start == 60) kingMoved[1] = true;
@@ -396,7 +405,7 @@ public class Board {
         if (whiteToMove()) {
             if (capturedPiece != 0) {
                 blackPieceCount--;
-                blackPieceValue--;
+                blackPieceValue -= Math.abs(capturedPiece);
             }
 
             if (m.equals(lastWhiteMove)) repeatedWhiteMoves++;
@@ -408,7 +417,7 @@ public class Board {
         else {
             if (capturedPiece != 0) {
                 whitePieceCount++;
-                whitePieceValue++;
+                whitePieceValue -= Math.abs(capturedPiece);
             }
 
             if (m.equals(lastBlackMove)) repeatedBlackMoves++;
@@ -418,8 +427,6 @@ public class Board {
             }
         }
 
-        gameState = getGameState();
-
 //        String s = switch (gameState) {
 //            case PLAYING -> "Playing";
 //            case DRAW -> "Draw";
@@ -428,10 +435,17 @@ public class Board {
 //            default -> "Unknown game state: " + gameState;
 //        };
         //System.out.println(s);
-
     }
 
     public int getGameState () {
+        return gameState;
+    }
+
+    private void updateGameState () {
+        gameState = calcGameState();
+    }
+
+    private int calcGameState () {
         // CHECKMATE
         if (possibleMoves.size() == 0) {
             if (whiteToMove() && whiteInCheck)
@@ -489,28 +503,40 @@ public class Board {
         return ret;
     }
 
+    private boolean capturedUnmovedPiece (int end, int capturedPiece) {
+        int piecetype = Math.abs(capturedPiece);
+        if (piecetype == R) {
+            int i = switch (end) {
+                case 0 -> 0;
+                case 7 -> 1;
+                case 56 -> 2;
+                case 63 -> 3;
+                default -> -1;
+            };
+            return (i > -1) && !rookMoved[i];
+        } else if (piecetype == K) {
+            int i = switch (end) {
+                case 4 -> 0;
+                case 60 -> 1;
+                default -> -1;
+            };
+            return (i > -1) && !kingMoved[i];
+        }
+        return false;
+    }
+
     private void addPossibleMove (LinkedList<Move> moveList, int start, int end, int capturedPiece, int promoteTo) {
-        if (possibleBlocks.size() > 0 && !possibleBlocks.contains(end)) return;
-        Move m = new Move(start, end, capturedPiece, promoteTo);
-        if (capturedPiece > 0)
-            moveList.push(m);
-        else
-            moveList.add(m);
+        addPossibleMove(moveList, start, end, capturedPiece, promoteTo, false);
     }
 
     private void addPossibleMove (LinkedList<Move> moveList, int start, int end, int capturedPiece) {
-        // If in check and this move doesn't block, don't add the move
-        if (possibleBlocks.size() > 0 && !possibleBlocks.contains(end)) return;
-        Move m = new Move(start, end, capturedPiece);
-        if (capturedPiece > 0)
-            moveList.push(m);
-        else
-            moveList.add(m);
+        addPossibleMove(moveList, start, end, capturedPiece, 0, false);
     }
 
-    private void addPossibleMove (LinkedList<Move> moveList, int start, int end, int capturedPiece, boolean firstMove) {
+    private void addPossibleMove (LinkedList<Move> moveList, int start, int end, int capturedPiece, int promoteTo, boolean firstMove) {
+        // If in check and this move doesn't block, don't add the move
         if (possibleBlocks.size() > 0 && !possibleBlocks.contains(end)) return;
-        Move m = new Move(start, end, capturedPiece, firstMove);
+        Move m = new Move(start, end, capturedPiece, promoteTo, firstMove, capturedUnmovedPiece(end, capturedPiece));
         if (capturedPiece > 0)
             moveList.push(m);
         else
@@ -573,18 +599,18 @@ public class Board {
 
         // En Passant
         // If advanced to 5th rank
-        if ((row(idx) == 4 && color == -1) || (row(idx) == 3 && color == 1)) {
-            Move lastMove = pastMoves.peek();
-            // If the last move was a pawn move immediately next to this pawn
-            if (Math.abs(lastMove.getEndIdx() - idx) == 1 && Math.abs(pieces[lastMove.getEndIdx()]) == P) {
-                // If the last move was a 2 square pawn move
-                if (Math.abs(row(lastMove.getEndIdx()) - row(lastMove.getStartIdx())) == 2) {
-                    int capturingIdx = lastMove.getEndIdx();
-                    addPossibleMove(list, idx, capturingIdx - 8 * color, 0);
-                    // Don't pass in any captured piece because otherwise it would be indistinguishable
-                }
-            }
-        }
+//        if ((row(idx) == 4 && color == -1) || (row(idx) == 3 && color == 1)) {
+//            Move lastMove = pastMoves.peek();
+//            // If the last move was a pawn move immediately next to this pawn
+//            if (Math.abs(lastMove.getEndIdx() - idx) == 1 && Math.abs(pieces[lastMove.getEndIdx()]) == P) {
+//                // If the last move was a 2 square pawn move
+//                if (Math.abs(row(lastMove.getEndIdx()) - row(lastMove.getStartIdx())) == 2) {
+//                    int capturingIdx = lastMove.getEndIdx();
+//                    addPossibleMove(list, idx, capturingIdx - 8 * color, 0);
+//                    // Don't pass in any captured piece because otherwise it would be indistinguishable
+//                }
+//            }
+//        }
     }
 
     private void addKnightMoves (LinkedList<Move> list, int idx) {
@@ -627,7 +653,7 @@ public class Board {
         for (int i = 0; i < 4; i++) {
             for (int newIdx : StraightIterator.iter(idx, i)) {
                 if (pieces[newIdx] * pieces[idx] <= 0) {
-                    addPossibleMove(list, idx, newIdx, pieces[newIdx], firstMove);
+                    addPossibleMove(list, idx, newIdx, pieces[newIdx], 0, firstMove);
 
                     if (pieces[newIdx] * pieces[idx] < 0) break;
                 } else {
@@ -655,7 +681,7 @@ public class Board {
             for(int dir: dirs) {
                 for (int tile : StraightIterator.iter(idx, dir)) {
                     if (pieces[tile] * color > 0) break;
-                    list.add(new Move(idx, tile, pieces[tile]));
+                    list.add(new Move(idx, tile, pieces[tile], capturedUnmovedPiece(tile, pieces[tile])));
                     if (pieces[tile] * color < 0) break;
                 }
             }
@@ -668,7 +694,7 @@ public class Board {
             for(int dir: dirs) {
                 for (int tile : DiagIterator.iter(idx, dir)) {
                     if (pieces[tile] * color > 0) break;
-                    list.add(new Move(idx, tile, pieces[tile]));
+                    list.add(new Move(idx, tile, pieces[tile], capturedUnmovedPiece(tile, pieces[tile])));
                     if (pieces[tile] * color < 0) break;
                 }
             }
@@ -678,7 +704,7 @@ public class Board {
             if((col == kcol || row == krow)){ //if pawn pinned by rook
                 int moveTo = idx+(color==-1?8:-8);
                 if(pieces[moveTo]==0)
-                    list.add(new Move(idx,moveTo,pieces[moveTo]));
+                    list.add(new Move(idx,moveTo,pieces[moveTo], capturedUnmovedPiece(moveTo, pieces[moveTo])));
             }else{ //pawn pinned by bishop
                 int dir;
                 if((kingIdx -idx) % 9==0 )
@@ -688,14 +714,14 @@ public class Board {
                 if(pieces[idx+dir]*color<0) {
                     //this theoretically should only be true when pinned by bishop which pawn can take
                     if(pieces[idx+dir]*color<0)
-                        list.add(new Move(idx,idx+dir,pieces[idx+dir]));
+                        list.add(new Move(idx,idx+dir,pieces[idx+dir], capturedUnmovedPiece(idx+dir, pieces[idx+dir])));
                 }else{
                     //this means bishop is pinning on a longer diag, only possible move the pawn theoretically can make here is enpassant
                     //warning my logic might be wrong
                     Move lastMove = pastMoves.peek();
                     int endPos = idx+(dir==-9||dir==7?-1:1);
                     if(Math.abs(pieces[lastMove.getEndIdx()])==P && Math.abs(lastMove.getEndIdx()- lastMove.getStartIdx())==16 && lastMove.getEndIdx()==endPos){
-                        list.add(new Move(idx,endPos,pieces[endPos]));
+                        list.add(new Move(idx,endPos,pieces[endPos], capturedUnmovedPiece(endPos, pieces[endPos])));
                     }
                 }
             }
@@ -771,7 +797,7 @@ public class Board {
                     if (rizzChange[i] + col < 8 && rizzChange[i] + col > -1) {
                         if (pieces[idx + idxChange[i]] * pieces[idx] <= 0) {
                             if (tileSafe(idx+idxChange[i], color))
-                                list.add(new Move(idx, idx + idxChange[i], pieces[idx + idxChange[i]], !kingMoved[kingIdx]));
+                                list.add(new Move(idx, idx + idxChange[i], pieces[idx + idxChange[i]], 0, !kingMoved[kingIdx], capturedUnmovedPiece(idx + idxChange[i], pieces[idx + idxChange[i]])));
                         }
                     }
                 }
@@ -780,24 +806,24 @@ public class Board {
             if (pieces[idx] > 0 && kingMoved[1] == false) {
                 if (rookMoved[3] == false && pieces[61] == 0 && pieces[62] == 0){
                     if(tileSafe(60,1) && tileSafe(61,1) && tileSafe(62,1))
-                        list.add(new Move(60, 62, 0, true));
+                        list.add(new Move(60, 62, 0, 0, true, false));
                 }
 
 
                 if (rookMoved[2] == false && pieces[59] == 0 && pieces[58] == 0 && pieces[57] == 0){
                     if(tileSafe(60,1) && tileSafe(59,1) && tileSafe(58,1))
-                        list.add(new Move(60, 58, 0, true));
+                        list.add(new Move(60, 58, 0, 0, true, false));
                 }
 
 
             } else if (pieces[idx] < 0 && kingMoved[0] == false) {
                 if (rookMoved[1] == false && pieces[5] == 0 && pieces[6] == 0){
                     if(tileSafe(4,-1) && tileSafe(5,-1) && tileSafe(6,-1))
-                        list.add(new Move(4, 6, 0, true));
+                        list.add(new Move(4, 6, 0, 0, true, false));
                 }
                 if (rookMoved[0] == false && pieces[1] == 0 && pieces[2] == 0 && pieces[3] == 0){
                     if(tileSafe(2,-1) && tileSafe(3,-1) && tileSafe(4,-1))
-                        list.add(new Move(4, 2, 0, true));
+                        list.add(new Move(4, 2, 0, 0, true, false));
                 }
             }
         }
@@ -844,6 +870,8 @@ public class Board {
                 }
             }
         }
+
+        updateGameState();
     }
     public void undoMove() {
         Move lastMove = pastMoves.pop();
@@ -895,14 +923,62 @@ public class Board {
             if (i > -1 && lastMove.isFirstMove())
                 rookMoved[i] = false;
         }
-        //king moved
-        if(startPieceType==K){
-            kingMoved[pieces[start] == -K ? 0 : 1] = !lastMove.isFirstMove();
+        // king moved
+        else if(startPieceType==K) {
+            int i = switch (start) {
+                case 4 -> 0;
+                case 60 -> 1;
+                default -> -1;
+            };
+            if (i > -1 && lastMove.isFirstMove())
+                kingMoved[i] = false;
+        }
+
+        // captured rook on starting square
+        if (Math.abs(capturedPiece) == R) {
+            int i = switch (end) {
+                case 0 -> 0;
+                case 7 -> 1;
+                case 56 -> 2;
+                case 63 -> 3;
+                default -> -1;
+            };
+            if (i > -1 && lastMove.capturedUnmovedPiece())
+                rookMoved[i] = false;
+        }
+        // captured king on starting square (shouldn't be possible but according to our move gen it is)
+        else if (Math.abs(capturedPiece) == K) {
+            int i = switch (end) {
+                case 4 -> 0;
+                case 60 -> 1;
+                default -> -1;
+            };
+            if (i > -1 && lastMove.capturedUnmovedPiece())
+                kingMoved[i] = false;
         }
 
         numActualMoves--;
+        if (whiteToMove()) {
+            if (repeatedWhiteMoves > 1)
+                repeatedWhiteMoves--;
+            if (capturedPiece != 0) {
+                blackPieceCount++;
+                blackPieceValue += capturedPiece*-1;
+            }
+        }
+        else {
+            if (repeatedBlackMoves > 1)
+                repeatedBlackMoves--;
+            if (capturedPiece != 0) {
+                whitePieceCount++;
+                whitePieceValue += capturedPiece;
+            }
+        }
+
         // Not updating possible moves again makes it faster but breaks the manual undo
 //        updatePossibleMoves(); //idk if this is necessary
+        updateGameState();
+
 
     }
 

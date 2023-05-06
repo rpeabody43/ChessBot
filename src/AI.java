@@ -2,7 +2,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 public class AI {
-    // region positional eval
+    // region constants
     final static int[][] positionalVals = {
             { // Pawns
                     0,  0,  0,  0,  0,  0,  0,  0,
@@ -65,6 +65,8 @@ public class AI {
                     20, 30, 10,  0,  0, 10, 30, 20
             }
     };
+
+    private static final int CHECKMATEEVAL = 1000000;
     //endregion
 
     private Board board;
@@ -76,11 +78,6 @@ public class AI {
     }
 
     public int evaluateCurrentPos(){
-        int gameState = board.getGameState();
-        // Looking for checkmate
-        if (gameState == Board.BLACKWINS) return -1000000;
-        else if (gameState == Board.WHITEWINS) return 1000000;
-
         int[] pieces = board.pieces;
 
         int eval = 0;
@@ -109,10 +106,17 @@ public class AI {
     }
     public int evalMove(Move move, int dep, int alpha, int beta){
         board.makeMove(move);
-        int res = 0;
+        int res;
         List<Move> possibleMoves = new LinkedList<>(board.getPossibleMoves());
+        int gameState = board.getGameState();
+        // Looking for checkmate
+        // Slightly weighted toward shorter forced mate
+        if (gameState == Board.BLACKWINS) res = -CHECKMATEEVAL + (depth - dep);
+        else if (gameState == Board.WHITEWINS) res = CHECKMATEEVAL - (depth - dep);
+        else if (gameState == Board.DRAW) res = 0;
+
         //copied from https://en.wikipedia.org/wiki/Alpha%E2%80%93beta_pruning
-        if(dep<=0) res = evaluateCurrentPos();
+        else if(dep<=0) res = evaluateCurrentPos();
         else if(board.whiteToMove()){ //maximizing player is white
             int value = -1000000000;
             for(Move m : possibleMoves){
@@ -143,10 +147,10 @@ public class AI {
         Move bestMove = null;
         int bestEval = -1000000000;
 
-        for(Move m : possibleMoves){
+        for(Move m : possibleMoves) {
             int eval = evalMove(m, depth, -1000000000, 1000000000);
 //            System.out.println("eval: "+eval + ", possible moves: " + possibleMoves.size());
-            if(eval*color>bestEval || m == null) {
+            if(eval*color>bestEval || bestMove == null) {
                 bestMove = m;
                 bestEval = eval*color;
             }

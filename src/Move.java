@@ -4,31 +4,27 @@ public class Move {
     private final int capturedPiece;
 
 
+    private final boolean capturedUnmovedPiece;
     private final boolean firstMove;
+
     private int promoteTo;
 
-    public Move (int start, int end, int capturedPiece) {
+    public Move (int start, int end, int capturedPiece, boolean capturedUnmovedPiece) {
         this.start = start;
         this.end = end;
         this.capturedPiece = capturedPiece;
         this.promoteTo = 0;
         this.firstMove = false;
+        this.capturedUnmovedPiece = capturedUnmovedPiece;
     }
 
-    public Move (int start, int end, int capturedPiece, int promoteTo) {
+    public Move (int start, int end, int capturedPiece, int promoteTo, boolean firstMove, boolean capturedUnmovedPiece) {
         this.start = start;
         this.end = end;
         this.capturedPiece = capturedPiece;
         this.promoteTo = promoteTo;
-        this.firstMove = false;
-    }
-
-    public Move (int start, int end, int capturedPiece, boolean firstMove) {
-        this.start = start;
-        this.end = end;
-        this.capturedPiece = capturedPiece;
-        this.promoteTo = 0;
         this.firstMove = firstMove;
+        this.capturedUnmovedPiece = capturedUnmovedPiece;
     }
 
     @Override
@@ -73,5 +69,9 @@ public class Move {
         if (other.capturedPiece != this.capturedPiece) return false;
 
         return true;
+    }
+
+    public boolean capturedUnmovedPiece() {
+        return capturedUnmovedPiece;
     }
 }

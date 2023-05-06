@@ -211,7 +211,7 @@ public class Sketch extends PApplet {
             }
         }
 
-        if(board.blackToMove()) {
+        if(board.blackToMove() && board.getGameState() == Board.PLAYING) {
             Move nextMove = ai.bestNextMove();
             if (nextMove != null) {
                 board.makeMove(nextMove);
