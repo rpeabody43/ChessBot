@@ -271,7 +271,7 @@ public class Board {
         if (i > -1) {
             Iterable<Integer> iter = StraightIterator.iter(kingIdx, i);
             int discoverAttack = tileAttackedByPiece(kingColor, R, kingIdx, iter);
-            if (discoverAttack > -1)
+            if ((discoverAttack > -1) && (checkingPieces.size() == 0 || checkingPieces.get(0) != discoverAttack))
                 checkingPieces.add(discoverAttack);
         }
 
@@ -957,7 +957,11 @@ public class Board {
                 kingMoved[i] = false;
         }
 
+
         numActualMoves--;
+
+        updateChecks(end, start);
+
         if (whiteToMove()) {
             if (repeatedWhiteMoves > 1)
                 repeatedWhiteMoves--;
