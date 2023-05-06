@@ -18,6 +18,8 @@ public class Sketch extends PApplet {
     private Move promoteMove;
     private PImage spotLightSprite;
 
+    boolean hasPrintedPGN;
+
     private int selectedSquare;
     private HashMap<Integer, Move> possibleMoves;
 
@@ -32,6 +34,7 @@ public class Sketch extends PApplet {
         this.ai = new AI(board, 3);
         this.selectedSquare = -1;
         this.promoting = false;
+        this.hasPrintedPGN=false;
     }
 
     // I LOVE SETTINGS
@@ -172,6 +175,7 @@ public class Sketch extends PApplet {
                     }
                 }
                 String wTitle = "VICTORY";
+                if(!hasPrintedPGN) {System.out.println(board.getPGN());hasPrintedPGN=true;}
             }
             case Board.BLACKWINS -> {
                 // black mated white
@@ -190,6 +194,7 @@ public class Sketch extends PApplet {
                     }
                 }
                 String lTitle = "DEFEAT";
+                if(!hasPrintedPGN) {System.out.println(board.getPGN()); hasPrintedPGN=true;}
             }
             case Board.DRAW -> {
                 // Perfect chess is always a draw
@@ -208,6 +213,7 @@ public class Sketch extends PApplet {
                     }
                 }
                 String dTitle = "DRAW";
+                if(!hasPrintedPGN) {System.out.println(board.getPGN()); hasPrintedPGN=true;}
             }
         }
 
@@ -272,6 +278,7 @@ public class Sketch extends PApplet {
 
         if (key == 'p') {
             board.printPastMoves();
+            System.out.println(board.getPGN());
         }
 
     }

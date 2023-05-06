@@ -32,6 +32,7 @@ public class Move {
         return start + " -> " + end;
     }
 
+
     // returns which piece was captured
     public int getCapturedPiece () {
         return capturedPiece;
