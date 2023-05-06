@@ -278,6 +278,7 @@ public class Sketch extends PApplet {
 
         if (key == 'p') {
             board.printPastMoves();
+            System.out.println(board.getPGN());
         }
 
     }

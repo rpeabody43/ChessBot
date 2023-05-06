@@ -949,6 +949,6 @@ public class Board {
         return res;
     }
     private String strNotation(int idx){
-        return ""+(char)(idx%8+97)+((64-idx)/8+1);
+        return ""+(char)(idx%8+97)+((63-idx)/8+1);
     }
 }
