@@ -599,18 +599,18 @@ public class Board {
 
         // En Passant
         // If advanced to 5th rank
-//        if ((row(idx) == 4 && color == -1) || (row(idx) == 3 && color == 1)) {
-//            Move lastMove = pastMoves.peek();
-//            // If the last move was a pawn move immediately next to this pawn
-//            if (Math.abs(lastMove.getEndIdx() - idx) == 1 && Math.abs(pieces[lastMove.getEndIdx()]) == P) {
-//                // If the last move was a 2 square pawn move
-//                if (Math.abs(row(lastMove.getEndIdx()) - row(lastMove.getStartIdx())) == 2) {
-//                    int capturingIdx = lastMove.getEndIdx();
-//                    addPossibleMove(list, idx, capturingIdx - 8 * color, 0);
-//                    // Don't pass in any captured piece because otherwise it would be indistinguishable
-//                }
-//            }
-//        }
+        if ((row(idx) == 4 && color == -1) || (row(idx) == 3 && color == 1)) {
+            Move lastMove = pastMoves.peek();
+            // If the last move was a pawn move immediately next to this pawn
+            if (Math.abs(lastMove.getEndIdx() - idx) == 1 && Math.abs(pieces[lastMove.getEndIdx()]) == P) {
+                // If the last move was a 2 square pawn move
+                if (Math.abs(row(lastMove.getEndIdx()) - row(lastMove.getStartIdx())) == 2) {
+                    int capturingIdx = lastMove.getEndIdx();
+                    addPossibleMove(list, idx, capturingIdx - 8 * color, 0);
+                    // Don't pass in any captured piece because otherwise it would be indistinguishable
+                }
+            }
+        }
     }
 
     private void addKnightMoves (LinkedList<Move> list, int idx) {
