@@ -915,4 +915,39 @@ public class Board {
         System.out.println(out);
     }
 
+    //portable game notation. this is slow and i don't like it but i challenge you to come up with a better solution
+    public String getPGN(){
+        String res = "";
+        Board temp = new Board();
+        int i = 1;
+        int moveNum = 0;
+        for(Move m : pastMoves){
+            if(moveNum%2==0) res+=i+". ";
+            if(Math.abs(temp.pieces[m.getStartIdx()])==P){
+                if(m.getCapturedPiece()!=0) res+=(char)(m.getStartIdx()%8+97)+"x";
+                res+=strNotation(m.getEndIdx())+" ";
+            }else if(Math.abs(temp.pieces[m.getStartIdx()])==K && Math.abs(m.getStartIdx()-m.getEndIdx())==2){
+                if(m.getStartIdx()-m.getEndIdx()>0) res+="O-O-O ";
+                else res+="O-O ";
+            }else{
+                res += switch(Math.abs(temp.pieces[m.getStartIdx()])){
+                    case N -> "N";
+                    case B -> "B";
+                    case R -> "R";
+                    case Q -> "Q";
+                    case K -> "K";
+                    default -> "";
+                };
+                if(m.getCapturedPiece()!=0) res+="x";
+                res+=strNotation(m.getEndIdx())+" ";
+            }
+            temp.makeMove(m);
+            if(moveNum%2==1) i++;
+            moveNum++;
+        }
+        return res;
+    }
+    private String strNotation(int idx){
+        return ""+(char)(idx%8+97)+((64-idx)/8+1);
+    }
 }
