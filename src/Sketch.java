@@ -234,7 +234,7 @@ public class Sketch extends PApplet {
                 String dTitle = "DRAW";
                 if(!hasPrintedPGN) {System.out.println(board.getPGN()); hasPrintedPGN=true;}
             }
-        }
+
 
         if(board.blackToMove() && board.getGameState() == Board.PLAYING) {
             Move nextMove = ai.bestNextMove();
