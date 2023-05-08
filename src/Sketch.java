@@ -21,6 +21,8 @@ public class Sketch extends PApplet {
     private int selectedSquare;
     private HashMap<Integer, Move> possibleMoves;
 
+    private int time = 0;
+
     public static void main(String[] args) {
         String[] processingArgs = {"ChessAI"};
         Sketch sketch = new Sketch();
@@ -72,7 +74,6 @@ public class Sketch extends PApplet {
                 blackPieces[i - 1] = loadImage("sprites/ChessPiecesv1/Black/black" + piece + "_v1.png");
             }
         }
-
     }
 
     private HashMap<Integer, Move> possibleMovesAtSelectedSq() {
@@ -154,12 +155,13 @@ public class Sketch extends PApplet {
     @Override
     public void draw () {
         drawBoard();
+
         if (board.numActualMoves %2 == 1){
             //board.makeMove(board.bestNextMove());
         }
         switch (board.getGameState()) {
-            case Board.WHITEWINS -> {
-                // white mated black
+            //TODO: text on screen
+            case Board.WHITEWINS, Board.BLACKWINS -> {
                 float squareWidth = width / 8f;
                 int[] currentBoard = board.pieces;
                 fill(0, 205);
@@ -174,25 +176,6 @@ public class Sketch extends PApplet {
                         }
                     }
                 }
-                String wTitle = "VICTORY";
-            }
-            case Board.BLACKWINS -> {
-                // black mated white
-                float squareWidth = width / 8f;
-                int[] currentBoard = board.pieces;
-                fill(0, 205);
-                noStroke();
-                for (int i = 0; i < 8; i++) {
-                    for (int j = 0; j < 8; j++) {
-                        int piece = currentBoard[i * 8 + j];
-                        if (Math.abs(piece) != 6 && board.lastMove().getEndIdx() != (i * 8 + j)) {
-                            square(squareWidth * j, squareWidth * i, squareWidth);
-                        }else{
-                            image(spotLightSprite, squareWidth * j, squareWidth * i);
-                        }
-                    }
-                }
-                String lTitle = "DEFEAT";
             }
             case Board.DRAW -> {
                 // Perfect chess is always a draw
@@ -210,12 +193,13 @@ public class Sketch extends PApplet {
                         }
                     }
                 }
-                String dTitle = "DRAW";
             }
         }
 
         if(board.blackToMove()) {
             board.makeMove(ai.bestNextMove());
+        }else{
+            // board.makeMove(ai.bestNextMove());
         }
     }
 
