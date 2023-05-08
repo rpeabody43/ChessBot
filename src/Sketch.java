@@ -111,6 +111,8 @@ public class Sketch extends PApplet {
             possibleMoves = possibleMovesAtSelectedSq();
         } else possibleMoves = new HashMap<>();
 
+        System.out.println(selectedSquare);
+
         for (int i = 0; i < 8; i++) {
             for (int j = 0; j < 8; j++) {
                 if ((i + j) % 2 == 1) {
@@ -158,11 +160,6 @@ public class Sketch extends PApplet {
     @Override
     public void draw () {
         drawBoard();
-
-
-        if (board.numActualMoves %2 == 1){
-            //board.makeMove(board.bestNextMove());
-        }
 
         switch (board.getGameState()) {
             //TODO: text on screen
@@ -226,14 +223,6 @@ public class Sketch extends PApplet {
             }
         }
 
-        if(board.blackToMove()) {
-            board.makeMove(ai.bestNextMove());
-        }else{
-            // board.makeMove(ai.bestNextMove());
-
-                String dTitle = "DRAW";
-                if(!hasPrintedPGN) {System.out.println(board.getPGN()); hasPrintedPGN=true;}
-            }
 
 
         if(board.blackToMove() && board.getGameState() == Board.PLAYING) {
@@ -242,7 +231,11 @@ public class Sketch extends PApplet {
                 board.makeMove(nextMove);
                 selectedSquare = nextMove.getEndIdx();
             }
+        } else {
+            // board.makeMove(ai.bestNextMove());
 
+            String dTitle = "DRAW";
+            if(!hasPrintedPGN) {System.out.println(board.getPGN()); hasPrintedPGN=true;}
         }
     }
 
