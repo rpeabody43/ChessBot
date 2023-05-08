@@ -18,6 +18,8 @@ public class Sketch extends PApplet {
     private Move promoteMove;
     private PImage spotLightSprite;
 
+    boolean hasPrintedPGN;
+
     private int selectedSquare;
     private HashMap<Integer, Move> possibleMoves;
 
@@ -31,9 +33,10 @@ public class Sketch extends PApplet {
 
     public Sketch() {
         this.board = new Board();
-        this.ai = new AI(board);
+        this.ai = new AI(board, 3);
         this.selectedSquare = -1;
         this.promoting = false;
+        this.hasPrintedPGN=false;
     }
 
     // I LOVE SETTINGS
@@ -156,12 +159,14 @@ public class Sketch extends PApplet {
     public void draw () {
         drawBoard();
 
+
         if (board.numActualMoves %2 == 1){
             //board.makeMove(board.bestNextMove());
         }
+
         switch (board.getGameState()) {
             //TODO: text on screen
-            case Board.WHITEWINS, Board.BLACKWINS -> {
+            case Board.WHITEWINS -> {
                 float squareWidth = width / 8f;
                 int[] currentBoard = board.pieces;
                 fill(0, 205);
@@ -176,6 +181,30 @@ public class Sketch extends PApplet {
                         }
                     }
                 }
+
+
+                String wTitle = "VICTORY";
+                if(!hasPrintedPGN) {System.out.println(board.getPGN());hasPrintedPGN=true;}
+            }
+            case Board.BLACKWINS -> {
+                // black mated white
+                float squareWidth = width / 8f;
+                int[] currentBoard = board.pieces;
+                fill(0, 205);
+                noStroke();
+                for (int i = 0; i < 8; i++) {
+                    for (int j = 0; j < 8; j++) {
+                        int piece = currentBoard[i * 8 + j];
+                        if (Math.abs(piece) != 6 && board.lastMove().getEndIdx() != (i * 8 + j)) {
+                            square(squareWidth * j, squareWidth * i, squareWidth);
+                        }else{
+                            image(spotLightSprite, squareWidth * j, squareWidth * i);
+                        }
+                    }
+                }
+                String lTitle = "DEFEAT";
+                if(!hasPrintedPGN) {System.out.println(board.getPGN()); hasPrintedPGN=true;}
+
             }
             case Board.DRAW -> {
                 // Perfect chess is always a draw
@@ -193,6 +222,7 @@ public class Sketch extends PApplet {
                         }
                     }
                 }
+
             }
         }
 
@@ -200,11 +230,24 @@ public class Sketch extends PApplet {
             board.makeMove(ai.bestNextMove());
         }else{
             // board.makeMove(ai.bestNextMove());
+
+                String dTitle = "DRAW";
+                if(!hasPrintedPGN) {System.out.println(board.getPGN()); hasPrintedPGN=true;}
+            }
+        }
+
+        if(board.blackToMove() && board.getGameState() == Board.PLAYING) {
+            Move nextMove = ai.bestNextMove();
+            if (nextMove != null) {
+                board.makeMove(nextMove);
+                selectedSquare = nextMove.getEndIdx();
+            }
+
         }
     }
 
     @Override
-    public void mouseClicked() {
+    public void mousePressed () {
         if (promoting) return;
         int row = mouseY*8 / height;
         int col = mouseX*8 / width;
@@ -221,8 +264,11 @@ public class Sketch extends PApplet {
             if (!promoting)
                 board.makeMove(m);
             selectedSquare = -1;
+
+            // show the move without waiting for the bot
+            drawBoard();
         }else{
-            selectedSquare = row*8 + col;
+            selectedSquare = selectedSquare==row*8+col ? -1 : row*8 + col;
         }
     }
 
@@ -246,8 +292,13 @@ public class Sketch extends PApplet {
 
         // DEBUGGING PURPOSES
         if (key == 'z') {
-            System.out.println("z");
             board.undoMove();
+            board.updatePossibleMoves();
+        }
+
+        if (key == 'p') {
+            board.printPastMoves();
+            System.out.println(board.getPGN());
         }
 
     }

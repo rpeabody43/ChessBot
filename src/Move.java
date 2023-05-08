@@ -1,22 +1,37 @@
 public class Move {
-    private int start; // index in 1d array
-    private int end;
-    private int capturedPiece;
+    private final int start; // index in 1d array
+    private final int end;
+    private final int capturedPiece;
+
+
+    private final boolean capturedUnmovedPiece;
+    private final boolean firstMove;
+
     private int promoteTo;
 
-    public Move (int start, int end, int capturedPiece) {
+    public Move (int start, int end, int capturedPiece, boolean capturedUnmovedPiece) {
         this.start = start;
         this.end = end;
         this.capturedPiece = capturedPiece;
         this.promoteTo = 0;
+        this.firstMove = false;
+        this.capturedUnmovedPiece = capturedUnmovedPiece;
     }
 
-    public Move (int start, int end, int capturedPiece, int promoteTo) {
+    public Move (int start, int end, int capturedPiece, int promoteTo, boolean firstMove, boolean capturedUnmovedPiece) {
         this.start = start;
         this.end = end;
         this.capturedPiece = capturedPiece;
         this.promoteTo = promoteTo;
+        this.firstMove = firstMove;
+        this.capturedUnmovedPiece = capturedUnmovedPiece;
     }
+
+    @Override
+    public String toString () {
+        return start + " -> " + end;
+    }
+
 
     // returns which piece was captured
     public int getCapturedPiece () {
@@ -39,6 +54,10 @@ public class Move {
         this.promoteTo = promoteTo;
     }
 
+    public boolean isFirstMove() {
+        return firstMove;
+    }
+
     @Override
     public boolean equals (Object obj) {
         if (obj == null || obj.getClass() != this.getClass()) {
@@ -51,5 +70,9 @@ public class Move {
         if (other.capturedPiece != this.capturedPiece) return false;
 
         return true;
+    }
+
+    public boolean capturedUnmovedPiece() {
+        return capturedUnmovedPiece;
     }
 }
