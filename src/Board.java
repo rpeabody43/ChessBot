@@ -101,7 +101,8 @@ public class Board {
             // king is a queen that can only move one square
             boolean kingMove = queenMove && Math.abs(newIdx - start) <= 9;
             // pawn is a bishop that can only move one square
-            boolean pawnMove = attackingPiece == B && Math.abs(newIdx - start) <= 9;
+            int delta = newIdx - start;
+            boolean pawnMove = attackingPiece == B && Math.abs(delta) <= 9 && delta*-color > 0;
             boolean attacked = p == -color * attackingPiece
                     || (queenMove && p == -color*Q)
                     || (kingMove && p == -color*K)
