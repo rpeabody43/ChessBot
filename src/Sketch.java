@@ -13,17 +13,21 @@ public class Sketch extends PApplet {
     private Board board;
     private PImage[] whitePieces;
     private PImage[] blackPieces;
+    private PImage spotLightSprite;
+    private PImage keepYourselfSafe;
+    private PImage chad;
+    private PImage soy;
+    private PImage point;
 
     private boolean promoting;
     private Move promoteMove;
-    private PImage spotLightSprite;
 
     boolean hasPrintedPGN;
 
     private int selectedSquare;
     private HashMap<Integer, Move> possibleMoves;
 
-    private int time = 0;
+    private final float r = random(0, 1);
 
     public static void main(String[] args) {
         String[] processingArgs = {"ChessAI"};
@@ -47,6 +51,7 @@ public class Sketch extends PApplet {
 
     @Override
     public void setup() {
+        System.out.println(r);
         String whitePath = "sprites/ChessPiecesv1/White/";
         whitePieces = new PImage[6];
         String blackPath = "sprites/ChessPiecesv1/Black/";
@@ -69,10 +74,14 @@ public class Sketch extends PApplet {
                     yield "";
             };
             spotLightSprite = loadImage("sprites/fancy/spotlight.png");
+            keepYourselfSafe = loadImage("sprites/fancy/K.PNG");
+            chad = loadImage("sprites/fancy/chad.PNG");
+            soy = loadImage("sprites/fancy/soy.PNG");
+            point = loadImage("sprites/fancy/point.png");
             whitePieces[i - 1] = loadImage("sprites/ChessPiecesv2/White/white" + piece + "_v2.png");
             blackPieces[i - 1] = loadImage("sprites/ChessPiecesv2/Black/black" + piece + "_v2.png");
-            float r = random(0, 1);
-            if(r >= 0.98333){
+            float random = random(0, 1);
+            if(random >= 0.98333){
                 whitePieces[i - 1] = loadImage("sprites/ChessPiecesv1/White/white" + piece + "_v1.png");
                 blackPieces[i - 1] = loadImage("sprites/ChessPiecesv1/Black/black" + piece + "_v1.png");
             }
@@ -160,7 +169,6 @@ public class Sketch extends PApplet {
         drawBoard();
 
         switch (board.getGameState()) {
-            //TODO: text on screen
             case Board.WHITEWINS -> {
                 float squareWidth = width / 8f;
                 int[] currentBoard = board.pieces;
@@ -176,9 +184,9 @@ public class Sketch extends PApplet {
                         }
                     }
                 }
-
-
-                String wTitle = "VICTORY";
+                if(r > 0.85) {
+                    image(point, 0, 0);
+                }
                 if(!hasPrintedPGN) {System.out.println(board.getPGN());hasPrintedPGN=true;}
             }
             case Board.BLACKWINS -> {
@@ -187,19 +195,30 @@ public class Sketch extends PApplet {
                 int[] currentBoard = board.pieces;
                 fill(0, 205);
                 noStroke();
+                float random = random(0, 1);
                 for (int i = 0; i < 8; i++) {
                     for (int j = 0; j < 8; j++) {
                         int piece = currentBoard[i * 8 + j];
                         if (Math.abs(piece) != 6 && board.lastMove().getEndIdx() != (i * 8 + j)) {
                             square(squareWidth * j, squareWidth * i, squareWidth);
-                        }else{
+                        } else if (piece == -6 && r > 0.95) {
+                            image(keepYourselfSafe, squareWidth * j,squareWidth * i);
+                            image(spotLightSprite, squareWidth * j, squareWidth * i);
+                        } else if (piece == 6 && r > 0.95) {
+                            image(soy, squareWidth * j, squareWidth * i);
+                            image(spotLightSprite, squareWidth * j, squareWidth * i);
+                        } else if (board.lastMove().getEndIdx() == (i * 8 + j) && r > 0.95) {
+                            image(chad, squareWidth * j, squareWidth * i);
+                            image(spotLightSprite, squareWidth * j, squareWidth * i);
+                        } else if (piece == -6 && random > 0.95){
+                            image(spotLightSprite, squareWidth * j, squareWidth * i);
+                            image(keepYourselfSafe, squareWidth * j,squareWidth * i);
+                        } else {
                             image(spotLightSprite, squareWidth * j, squareWidth * i);
                         }
                     }
                 }
-                String lTitle = "DEFEAT";
                 if(!hasPrintedPGN) {System.out.println(board.getPGN()); hasPrintedPGN=true;}
-
             }
             case Board.DRAW -> {
                 // Perfect chess is always a draw
@@ -223,18 +242,18 @@ public class Sketch extends PApplet {
 
 
 
-        if(board.blackToMove() && board.getGameState() == Board.PLAYING) {
-            Move nextMove = ai.bestNextMove();
-            if (nextMove != null) {
-                board.makeMove(nextMove);
-                selectedSquare = nextMove.getEndIdx();
-            }
-        } else {
-            // board.makeMove(ai.bestNextMove());
-
-            String dTitle = "DRAW";
-            if(!hasPrintedPGN) {System.out.println(board.getPGN()); hasPrintedPGN=true;}
-        }
+//        if(board.blackToMove() && board.getGameState() == Board.PLAYING) {
+//            Move nextMove = ai.bestNextMove();
+//            if (nextMove != null) {
+//                board.makeMove(nextMove);
+//                selectedSquare = nextMove.getEndIdx();
+//            }
+//        } else {
+//            // board.makeMove(ai.bestNextMove());
+//
+//            String dTitle = "DRAW";
+//            if(!hasPrintedPGN) {System.out.println(board.getPGN()); hasPrintedPGN=true;}
+//        }
     }
 
     @Override
@@ -291,6 +310,5 @@ public class Sketch extends PApplet {
             board.printPastMoves();
             System.out.println(board.getPGN());
         }
-
     }
 }
