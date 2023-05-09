@@ -108,7 +108,7 @@ public class Board {
                     || (pawnMove && p == -color*P);
             if (attacked) return newIdx;
             // Knight is the only one that can't end early
-            else if (attackingPiece != N) return -1;
+            else if (attackingPiece != N && Math.abs(p) != K) return -1;
         }
         return -1;
     }
@@ -251,13 +251,9 @@ public class Board {
         }
         // Knight check
         else if (Math.abs(endPiece) == N) {
-            int[] knightDeltas = {6, 10, 15, 17};
-            for (int d : knightDeltas) {
-                if (d == Math.abs(deltaEnd)) {
-                    checkingPieces.add(end);
-                    break;
-                }
-            }
+            Iterable<Integer> iter = KnightIterator.iter(kingIdx);
+            if (tileAttackedByPiece(kingColor, N, kingIdx, iter) >= 0)
+                checkingPieces.add(end);
         }
 
         int deltaStart = start - kingIdx;
@@ -886,9 +882,9 @@ public class Board {
         pieces[start] = movedPiece;
         pieces[end] = capturedPiece;
 
-        if (pieces[start] == K)
+        if (movedPiece == K)
             whiteKing = start;
-        else if (pieces[start] == -K)
+        else if (movedPiece == -K)
             blackKing = start;
 
         // En passant
@@ -957,10 +953,10 @@ public class Board {
                 kingMoved[i] = false;
         }
 
-
         numActualMoves--;
 
-        updateChecks(end, start);
+        Move moveBeforeLast = pastMoves.peek();
+        updateChecks(moveBeforeLast.getStartIdx(), moveBeforeLast.getEndIdx());
 
         if (whiteToMove()) {
             if (repeatedWhiteMoves > 1)
@@ -982,8 +978,6 @@ public class Board {
         // Not updating possible moves again makes it faster but breaks the manual undo
 //        updatePossibleMoves(); //idk if this is necessary
         updateGameState();
-
-
     }
 
     public void printPastMoves () {
