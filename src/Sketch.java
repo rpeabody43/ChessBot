@@ -33,10 +33,12 @@ public class Sketch extends PApplet {
 
     public Sketch() {
         this.board = new Board();
-        this.ai = new AI(board, 3);
+        this.ai = new AI(board, 5);
         this.selectedSquare = -1;
         this.promoting = false;
         this.hasPrintedPGN=false;
+
+        this.time = 0;
     }
 
     // I LOVE SETTINGS
@@ -223,13 +225,26 @@ public class Sketch extends PApplet {
 
 
 
-        if(board.blackToMove() && board.getGameState() == Board.PLAYING) {
+        // Bot playing against itself
+        time++;
+
+        if (time >= 60 && board.getGameState() == Board.PLAYING) {
             Move nextMove = ai.bestNextMove();
             if (nextMove != null) {
                 board.makeMove(nextMove);
                 selectedSquare = nextMove.getEndIdx();
             }
-        } else {
+            time = 0;
+        }
+
+//        if(board.blackToMove() && board.getGameState() == Board.PLAYING) {
+//            Move nextMove = ai.bestNextMove();
+//            if (nextMove != null) {
+//                board.makeMove(nextMove);
+//                selectedSquare = nextMove.getEndIdx();
+//            }
+//        }
+        else {
             // board.makeMove(ai.bestNextMove());
 
             String dTitle = "DRAW";
