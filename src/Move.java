@@ -3,11 +3,13 @@ public class Move {
     private final int end;
     private final int capturedPiece;
 
+    private final boolean pawnMove;
 
     private final boolean capturedUnmovedPiece;
     private final boolean firstMove;
 
     private int promoteTo;
+
 
     public Move (int start, int end, int capturedPiece, boolean capturedUnmovedPiece) {
         this.start = start;
@@ -16,8 +18,18 @@ public class Move {
         this.promoteTo = 0;
         this.firstMove = false;
         this.capturedUnmovedPiece = capturedUnmovedPiece;
+        this.pawnMove = false;
     }
 
+    public Move (int start, int end, int capturedPiece, int promoteTo, boolean firstMove, boolean capturedUnmovedPiece, boolean pawnMove) {
+        this.start = start;
+        this.end = end;
+        this.capturedPiece = capturedPiece;
+        this.promoteTo = promoteTo;
+        this.firstMove = firstMove;
+        this.capturedUnmovedPiece = capturedUnmovedPiece;
+        this.pawnMove = pawnMove;
+    }
     public Move (int start, int end, int capturedPiece, int promoteTo, boolean firstMove, boolean capturedUnmovedPiece) {
         this.start = start;
         this.end = end;
@@ -25,6 +37,7 @@ public class Move {
         this.promoteTo = promoteTo;
         this.firstMove = firstMove;
         this.capturedUnmovedPiece = capturedUnmovedPiece;
+        this.pawnMove = false;
     }
 
     @Override
@@ -74,5 +87,9 @@ public class Move {
 
     public boolean capturedUnmovedPiece() {
         return capturedUnmovedPiece;
+    }
+
+    public boolean reversible () {
+        return !pawnMove && capturedPiece == 0;
     }
 }

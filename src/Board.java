@@ -533,7 +533,7 @@ public class Board {
     private void addPossibleMove (LinkedList<Move> moveList, int start, int end, int capturedPiece, int promoteTo, boolean firstMove) {
         // If in check and this move doesn't block, don't add the move
         if (possibleBlocks.size() > 0 && !possibleBlocks.contains(end)) return;
-        Move m = new Move(start, end, capturedPiece, promoteTo, firstMove, capturedUnmovedPiece(end, capturedPiece));
+        Move m = new Move(start, end, capturedPiece, promoteTo, firstMove, capturedUnmovedPiece(end, capturedPiece), Math.abs(pieces[start])==P);
         if (capturedPiece > 0)
             moveList.push(m);
         else
@@ -956,8 +956,10 @@ public class Board {
 
         numActualMoves--;
 
-        Move moveBeforeLast = pastMoves.peek();
-        updateChecks(moveBeforeLast.getStartIdx(), moveBeforeLast.getEndIdx());
+        if (pastMoves.size() > 0) {
+            Move moveBeforeLast = pastMoves.peek();
+            updateChecks(moveBeforeLast.getStartIdx(), moveBeforeLast.getEndIdx());
+        }
 
         if (whiteToMove()) {
             if (repeatedWhiteMoves > 1)
