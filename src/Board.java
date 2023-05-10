@@ -430,7 +430,6 @@ public class Board {
                 return DRAW; // Stalemate
         }
 
-        /*
         // REPEATED MOVES
         // From https://www.chessprogramming.org/Repetitions
         // Slows down program a fair bit but prevents the bot from getting stuck in a loop
@@ -469,8 +468,6 @@ public class Board {
             }
             else break;
         }
-
-         */
 
         // Insufficient material occurs when both players have only
         // 1. King
@@ -1015,7 +1012,19 @@ public class Board {
             if(moveNum%2==0) res+=i+". ";
             if(Math.abs(temp.pieces[m.getStartIdx()])==P){
                 if(m.getCapturedPiece()!=0) res+=(char)(m.getStartIdx()%8+97)+"x";
-                res+=strNotation(m.getEndIdx())+" ";
+                res+=strNotation(m.getEndIdx());
+                if (m.getPromoteTo() != 0) {
+                    res += "=";
+                    res += switch(Math.abs(m.getPromoteTo())){
+                        case N -> "N";
+                        case B -> "B";
+                        case R -> "R";
+                        case Q -> "Q";
+                        case K -> "K";
+                        default -> "";
+                    };
+                }
+                res += " ";
             }else if(Math.abs(temp.pieces[m.getStartIdx()])==K && Math.abs(m.getStartIdx()-m.getEndIdx())==2){
                 if(m.getStartIdx()-m.getEndIdx()>0) res+="O-O-O ";
                 else res+="O-O ";
