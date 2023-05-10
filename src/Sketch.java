@@ -55,7 +55,6 @@ public class Sketch extends PApplet {
 
     @Override
     public void setup() {
-        System.out.println(r);
         String whitePath = "sprites/ChessPiecesv1/White/";
         whitePieces = new PImage[6];
         String blackPath = "sprites/ChessPiecesv1/Black/";
