@@ -96,7 +96,7 @@ public class AI {
             // positional code
             int positionalVal = 0;
             if (piece != 0) {
-                int positionalIdx = color > 0 ? i : 7 * Board.column(i) + Board.row(i);
+                int positionalIdx = color > 0 ? i : 8 * (7 - Board.column(i)) + Board.row(i);
                 positionalVal = positionalVals[Math.abs(piece)-1][positionalIdx];
             }
 

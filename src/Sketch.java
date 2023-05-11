@@ -29,6 +29,8 @@ public class Sketch extends PApplet {
 
     private final float r = random(0, 1);
 
+    private int time;
+
     public static void main(String[] args) {
         String[] processingArgs = {"ChessAI"};
         Sketch sketch = new Sketch();
@@ -41,6 +43,8 @@ public class Sketch extends PApplet {
         this.selectedSquare = -1;
         this.promoting = false;
         this.hasPrintedPGN=false;
+
+        this.time = 0;
     }
 
     // I LOVE SETTINGS
@@ -51,7 +55,6 @@ public class Sketch extends PApplet {
 
     @Override
     public void setup() {
-        System.out.println(r);
         String whitePath = "sprites/ChessPiecesv1/White/";
         whitePieces = new PImage[6];
         String blackPath = "sprites/ChessPiecesv1/Black/";
@@ -242,15 +245,12 @@ public class Sketch extends PApplet {
 
 
         if(board.blackToMove() && board.getGameState() == Board.PLAYING) {
+
             Move nextMove = ai.bestNextMove();
-            if (nextMove != null) {
+            if(nextMove != null) {
                 board.makeMove(nextMove);
                 selectedSquare = nextMove.getEndIdx();
-            }
-        } else {
-            // board.makeMove(ai.bestNextMove());
-
-            if(!hasPrintedPGN) {System.out.println(board.getPGN()); hasPrintedPGN=true;}
+           }
         }
     }
 

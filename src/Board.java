@@ -1,8 +1,4 @@
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedList;
-import java.util.Stack;
+import java.util.*;
 
 public class Board {
 
@@ -29,15 +25,8 @@ public class Board {
     private int blackPieceValue;
     private int blackPieceCount;
 
-
-    private int repeatedWhiteMoves;
-    private int repeatedBlackMoves;
-    private Move lastWhiteMove;
-    private Move lastBlackMove;
-
-
     private LinkedList<Move> possibleMoves;
-    private Stack<Move> pastMoves;
+    private ArrayDeque<Move> pastMoves;
 
     int numActualMoves;
     int[] pieces;
@@ -77,7 +66,7 @@ public class Board {
         blackKing = 4;
         whiteKing = 60;
 
-        pastMoves = new Stack<>();
+        pastMoves = new ArrayDeque<>();
         possibleBlocks = new HashSet<>();
 
         updatePossibleMoves();
@@ -101,7 +90,8 @@ public class Board {
             // king is a queen that can only move one square
             boolean kingMove = queenMove && Math.abs(newIdx - start) <= 9;
             // pawn is a bishop that can only move one square
-            boolean pawnMove = attackingPiece == B && Math.abs(newIdx - start) <= 9;
+            int delta = newIdx - start;
+            boolean pawnMove = attackingPiece == B && Math.abs(delta) <= 9 && delta*-color > 0;
             boolean attacked = p == -color * attackingPiece
                     || (queenMove && p == -color*Q)
                     || (kingMove && p == -color*K)
@@ -403,23 +393,11 @@ public class Board {
                 blackPieceCount--;
                 blackPieceValue -= Math.abs(capturedPiece);
             }
-
-            if (m.equals(lastWhiteMove)) repeatedWhiteMoves++;
-            else {
-                lastWhiteMove = m;
-                repeatedWhiteMoves = 1;
-            }
         }
         else {
             if (capturedPiece != 0) {
                 whitePieceCount++;
                 whitePieceValue -= Math.abs(capturedPiece);
-            }
-
-            if (m.equals(lastBlackMove)) repeatedBlackMoves++;
-            else {
-                lastBlackMove = m;
-                repeatedBlackMoves = 1;
             }
         }
 
@@ -453,8 +431,43 @@ public class Board {
         }
 
         // REPEATED MOVES
-        if (repeatedWhiteMoves == 3 && repeatedBlackMoves == 3)
-            return DRAW;
+        // From https://www.chessprogramming.org/Repetitions
+        // Slows down program a fair bit but prevents the bot from getting stuck in a loop
+        short c = 0, i;
+        int repititionCount = 0;
+        SimpleMove[] chainList = new SimpleMove[24];
+        for (i = 0; i < chainList.length; i++)
+            chainList[i] = new SimpleMove();
+
+        outerloop: for (Move m : pastMoves) {
+            if (m.reversible()) {
+                for (i = 0; i < 24; i++) {
+                    if (m.getEndIdx() == chainList[i].start) {
+                        if (m.getStartIdx() == chainList[i].end) {
+                            c--;
+                            if (c == 0) {
+                                repititionCount++;
+                                if (repititionCount >= 3) return DRAW;
+                            }
+
+                            chainList[i].setEmpty();
+                            continue outerloop;
+                        }
+                        chainList[i].start = m.getStartIdx();
+                        continue outerloop;
+                    }
+                }
+
+                for (i = 0; i < 24; i++) {
+                    if (chainList[i].isEmpty()) {
+                        chainList[i].setFrom(m);
+                        c++;
+                        continue outerloop;
+                    }
+                }
+            }
+            else break;
+        }
 
         // Insufficient material occurs when both players have only
         // 1. King
@@ -532,7 +545,8 @@ public class Board {
     private void addPossibleMove (LinkedList<Move> moveList, int start, int end, int capturedPiece, int promoteTo, boolean firstMove) {
         // If in check and this move doesn't block, don't add the move
         if (possibleBlocks.size() > 0 && !possibleBlocks.contains(end)) return;
-        Move m = new Move(start, end, capturedPiece, promoteTo, firstMove, capturedUnmovedPiece(end, capturedPiece));
+        boolean pawnMove = Math.abs(pieces[start])==P;
+        Move m = new Move(start, end, capturedPiece, promoteTo, firstMove, capturedUnmovedPiece(end, capturedPiece), pawnMove);
         if (capturedPiece > 0)
             moveList.push(m);
         else
@@ -955,20 +969,18 @@ public class Board {
 
         numActualMoves--;
 
-        Move moveBeforeLast = pastMoves.peek();
-        updateChecks(moveBeforeLast.getStartIdx(), moveBeforeLast.getEndIdx());
+        if (pastMoves.size() > 0) {
+            Move moveBeforeLast = pastMoves.peek();
+            updateChecks(moveBeforeLast.getStartIdx(), moveBeforeLast.getEndIdx());
+        }
 
         if (whiteToMove()) {
-            if (repeatedWhiteMoves > 1)
-                repeatedWhiteMoves--;
             if (capturedPiece != 0) {
                 blackPieceCount++;
                 blackPieceValue += capturedPiece*-1;
             }
         }
         else {
-            if (repeatedBlackMoves > 1)
-                repeatedBlackMoves--;
             if (capturedPiece != 0) {
                 whitePieceCount++;
                 whitePieceValue += capturedPiece;
@@ -995,11 +1007,24 @@ public class Board {
         Board temp = new Board();
         int i = 1;
         int moveNum = 0;
-        for(Move m : pastMoves){
+        for (Iterator<Move> it = pastMoves.descendingIterator(); it.hasNext(); ) {
+            Move m = it.next();
             if(moveNum%2==0) res+=i+". ";
             if(Math.abs(temp.pieces[m.getStartIdx()])==P){
                 if(m.getCapturedPiece()!=0) res+=(char)(m.getStartIdx()%8+97)+"x";
-                res+=strNotation(m.getEndIdx())+" ";
+                res+=strNotation(m.getEndIdx());
+                if (m.getPromoteTo() != 0) {
+                    res += "=";
+                    res += switch(Math.abs(m.getPromoteTo())){
+                        case N -> "N";
+                        case B -> "B";
+                        case R -> "R";
+                        case Q -> "Q";
+                        case K -> "K";
+                        default -> "";
+                    };
+                }
+                res += " ";
             }else if(Math.abs(temp.pieces[m.getStartIdx()])==K && Math.abs(m.getStartIdx()-m.getEndIdx())==2){
                 if(m.getStartIdx()-m.getEndIdx()>0) res+="O-O-O ";
                 else res+="O-O ";
