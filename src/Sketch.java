@@ -81,7 +81,7 @@ public class Sketch extends PApplet {
             whitePieces[i - 1] = loadImage("sprites/ChessPiecesv2/White/white" + piece + "_v2.png");
             blackPieces[i - 1] = loadImage("sprites/ChessPiecesv2/Black/black" + piece + "_v2.png");
             float random = random(0, 1);
-            if(random >= 0.98333){
+            if(random >= 0.98333 || r > 0.99){
                 whitePieces[i - 1] = loadImage("sprites/ChessPiecesv1/White/white" + piece + "_v1.png");
                 blackPieces[i - 1] = loadImage("sprites/ChessPiecesv1/Black/black" + piece + "_v1.png");
             }
@@ -204,13 +204,13 @@ public class Sketch extends PApplet {
                         } else if (piece == -6 && r > 0.95) {
                             image(keepYourselfSafe, squareWidth * j,squareWidth * i);
                             image(spotLightSprite, squareWidth * j, squareWidth * i);
-                        } else if (piece == 6 && r > 0.95) {
+                        } else if (piece == 6 && r > 0.975) {
                             image(soy, squareWidth * j, squareWidth * i);
                             image(spotLightSprite, squareWidth * j, squareWidth * i);
-                        } else if (board.lastMove().getEndIdx() == (i * 8 + j) && r > 0.95) {
+                        } else if (board.lastMove().getEndIdx() == (i * 8 + j) && r > 0.975) {
                             image(chad, squareWidth * j, squareWidth * i);
                             image(spotLightSprite, squareWidth * j, squareWidth * i);
-                        } else if (piece == -6 && random > 0.95){
+                        } else if (piece == -6 && r > 0.7 && random > 0.95){
                             image(spotLightSprite, squareWidth * j, squareWidth * i);
                             image(keepYourselfSafe, squareWidth * j,squareWidth * i);
                         } else {
@@ -236,24 +236,22 @@ public class Sketch extends PApplet {
                         }
                     }
                 }
-
             }
         }
 
 
 
-//        if(board.blackToMove() && board.getGameState() == Board.PLAYING) {
-//            Move nextMove = ai.bestNextMove();
-//            if (nextMove != null) {
-//                board.makeMove(nextMove);
-//                selectedSquare = nextMove.getEndIdx();
-//            }
-//        } else {
-//            // board.makeMove(ai.bestNextMove());
-//
-//            String dTitle = "DRAW";
-//            if(!hasPrintedPGN) {System.out.println(board.getPGN()); hasPrintedPGN=true;}
-//        }
+        if(board.blackToMove() && board.getGameState() == Board.PLAYING) {
+            Move nextMove = ai.bestNextMove();
+            if (nextMove != null) {
+                board.makeMove(nextMove);
+                selectedSquare = nextMove.getEndIdx();
+            }
+        } else {
+            // board.makeMove(ai.bestNextMove());
+
+            if(!hasPrintedPGN) {System.out.println(board.getPGN()); hasPrintedPGN=true;}
+        }
     }
 
     @Override
