@@ -97,7 +97,9 @@ public class Board {
                     || (kingMove && p == -color*K)
                     || (pawnMove && p == -color*P);
             if (attacked) return newIdx;
+
             // Knight is the only one that can't end early
+            // King cannot block an attack on itself
             else if (attackingPiece != N && Math.abs(p) != K) return -1;
         }
         return -1;
@@ -202,6 +204,10 @@ public class Board {
         // Based on direction check if it's being attacked directly
         // Also check in its direction for a discover check
         int deltaEnd = end - kingIdx;
+        // Used for bishop check
+        int rowDelta = row(end) - row(kingIdx);
+        int colDelta = column(end) - column(kingIdx);
+
         // Rook check
         if (Math.abs(endPiece) == R || Math.abs(endPiece) == Q) {
             boolean vert = deltaEnd % 8 == 0;
@@ -220,9 +226,6 @@ public class Board {
         }
         // Bishop check
         if (Math.abs(endPiece) == B || Math.abs(endPiece) == P || Math.abs(endPiece) == Q) {
-            int rowDelta = row(end) - row(kingIdx);
-            int colDelta = column(end) - column(kingIdx);
-
             boolean onFirstDiag = rowDelta == colDelta;
             boolean onOtherDiag = rowDelta == -colDelta;
 
@@ -250,9 +253,9 @@ public class Board {
         int i = -1;
 
         // Rook discover
-        if (deltaStart % 8 == 0)
+        if (deltaStart % 8 == 0 && deltaEnd % 8 != 0)
             i = deltaStart > 0 ? 3 : 1;
-        else if (row(start) == row(kingIdx))
+        else if (row(start) == row(kingIdx) && row(end) != row(kingIdx))
             i = deltaStart > 0 ? 2 : 0;
         if (i > -1) {
             Iterable<Integer> iter = StraightIterator.iter(kingIdx, i);
@@ -263,11 +266,11 @@ public class Board {
 
         // Bishop discover
         i = -1;
-        int rowDelta = row(start) - row(kingIdx);
-        int colDelta = column(start) - column(kingIdx);
-        if (rowDelta == colDelta)
+        int rowDeltaStart = row(start) - row(kingIdx);
+        int colDeltaStart = column(start) - column(kingIdx);
+        if (rowDeltaStart == colDeltaStart && rowDelta != colDelta)
             i = deltaEnd > 0 ? 3 : 0;
-        else if (rowDelta == -colDelta)
+        else if (rowDeltaStart == -colDeltaStart && rowDelta != -colDelta)
             i = deltaEnd > 0 ? 2 : 1;
 
         if (i > -1) {
@@ -534,6 +537,10 @@ public class Board {
         return false;
     }
 
+    private boolean inCheck () {
+        return (whiteToMove() && whiteInCheck) || (blackToMove() && blackInCheck);
+    }
+
     private void addPossibleMove (LinkedList<Move> moveList, int start, int end, int capturedPiece, int promoteTo) {
         addPossibleMove(moveList, start, end, capturedPiece, promoteTo, false);
     }
@@ -544,7 +551,7 @@ public class Board {
 
     private void addPossibleMove (LinkedList<Move> moveList, int start, int end, int capturedPiece, int promoteTo, boolean firstMove) {
         // If in check and this move doesn't block, don't add the move
-        if (possibleBlocks.size() > 0 && !possibleBlocks.contains(end)) return;
+        if (inCheck() && !possibleBlocks.contains(end)) return;
         boolean pawnMove = Math.abs(pieces[start])==P;
         Move m = new Move(start, end, capturedPiece, promoteTo, firstMove, capturedUnmovedPiece(end, capturedPiece), pawnMove);
         if (capturedPiece > 0)

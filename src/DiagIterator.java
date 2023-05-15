@@ -30,8 +30,6 @@ class DiagIterator implements Iterable<Integer> {
         private int endIdx;
 
         DiagIteratorIter(int startIdx, int direction) {
-            this.delta = direction;
-
             this.idx = startIdx;
             int col = startIdx % 8;
             int row = startIdx / 8;
