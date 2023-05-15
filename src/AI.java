@@ -148,7 +148,7 @@ public class AI {
         int bestEval = -1000000000;
 
         for(Move m : possibleMoves) {
-            int eval = evalMove(m, depth, -1000000000, 1000000000);
+            int eval = evalMove(m, depth-1, -1000000000, 1000000000);
 //            System.out.println("eval: "+eval + ", possible moves: " + possibleMoves.size());
             if(eval*color>bestEval || bestMove == null) {
                 bestMove = m;
@@ -160,7 +160,6 @@ public class AI {
         System.out.println(totalTimeSeconds + "s");
 
         return bestMove;
-
     }
 
 }

@@ -24,10 +24,15 @@ public class Sketch extends PApplet {
 
     boolean hasPrintedPGN;
 
+    private boolean firstRender;
+
     private int selectedSquare;
     private HashMap<Integer, Move> possibleMoves;
 
     private final float r = random(0, 1);
+
+    private final boolean botPlayingBlack;
+    private final boolean botPlayingWhite;
 
     private int time;
 
@@ -39,12 +44,17 @@ public class Sketch extends PApplet {
 
     public Sketch() {
         this.board = new Board();
-        this.ai = new AI(board, 3);
+        this.ai = new AI(board, 4);
         this.selectedSquare = -1;
         this.promoting = false;
         this.hasPrintedPGN=false;
 
         this.time = 0;
+
+        this.botPlayingWhite = false;
+        this.botPlayingBlack = false;
+
+        this.firstRender = true;
     }
 
     // I LOVE SETTINGS
@@ -169,6 +179,23 @@ public class Sketch extends PApplet {
     // -- GAMELOOP --
     @Override
     public void draw () {
+        if (firstRender) {
+            drawBoard();
+            firstRender = false;
+            return;
+        }
+
+        // Generate next board position before rendering
+        if (board.getGameState() == Board.PLAYING) {
+            if ((board.whiteToMove() && botPlayingWhite) || (board.blackToMove() && botPlayingBlack)) {
+                Move nextMove = ai.bestNextMove();
+                if (nextMove != null) {
+                    board.makeMove(nextMove);
+                    selectedSquare = nextMove.getEndIdx();
+                }
+            }
+        }
+
         drawBoard();
 
         switch (board.getGameState()) {
@@ -240,17 +267,6 @@ public class Sketch extends PApplet {
                     }
                 }
             }
-        }
-
-
-
-        if(board.blackToMove() && board.getGameState() == Board.PLAYING) {
-
-            Move nextMove = ai.bestNextMove();
-            if(nextMove != null) {
-                board.makeMove(nextMove);
-                selectedSquare = nextMove.getEndIdx();
-           }
         }
     }
 
